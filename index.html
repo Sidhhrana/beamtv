@@ -4,6 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Beam - Stream Bold</title>
+  <meta name="theme-color" content="#0a0a0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="https://i.ibb.co/Y4gscFwJ/image.png" />
   <link rel="stylesheet" href="styles.css?v=20260316-1" />
 </head>
 <body>
@@ -28,9 +33,42 @@
         <img class="icon-img" src="https://i.ibb.co/Kj84X57R/image-removebg-preview.png" alt="Search" />
       </button>
       <button id="shuffleBtn" class="ghost-btn">Shuffle</button>
-      <div class="avatar">SK</div>
+      <div id="profileAvatar" class="avatar">G</div>
     </div>
   </header>
+
+  <div id="profileMenu" class="profile-menu hidden">
+    <button id="switchProfileBtn" class="menu-item">Switch Profile</button>
+    <button id="manageProfilesBtn" class="menu-item">Manage Profiles</button>
+  </div>
+
+  <div id="profileOverlay" class="profile-overlay hidden" aria-hidden="true">
+    <div class="profile-shell">
+      <div class="profile-brand">BEAM</div>
+      <div class="profile-title">Who's watching?</div>
+      <div id="profileGrid" class="profile-grid"></div>
+      <button id="addProfileBtn" class="ghost-btn">Add Profile</button>
+    </div>
+    <div id="profileLoading" class="profile-loading hidden">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <div id="introSequence" class="intro-sequence hidden" aria-hidden="true">
+    <div class="strike-line"></div>
+    <div class="light-sweep"></div>
+    <div class="beam-text" data-text="BEAM">BEAM</div>
+    <div class="flash-transition"></div>
+  </div>
+
+  <div id="manageOverlay" class="profile-overlay hidden" aria-hidden="true">
+    <div class="profile-shell">
+      <div class="profile-brand">BEAM</div>
+      <div class="profile-title">Manage Profiles</div>
+      <div id="manageGrid" class="profile-grid"></div>
+      <button id="manageCloseBtn" class="ghost-btn">Done</button>
+    </div>
+  </div>
 
   <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true">
     <div class="overlay-scrim"></div>

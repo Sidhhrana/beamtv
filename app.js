@@ -182,6 +182,8 @@ const STORAGE_KEYS = {
   progress: "beam_progress",
   list: "beam_list",
   settings: "beam_settings",
+  profiles: "beam_profiles",
+  activeProfile: "beam_active_profile",
 };
 
 const DEFAULT_SETTINGS = {
@@ -264,6 +266,20 @@ const elements = {
   settingClearHistory: document.getElementById("settingClearHistory"),
 };
 
+const profileElements = {
+  overlay: document.getElementById("profileOverlay"),
+  grid: document.getElementById("profileGrid"),
+  addBtn: document.getElementById("addProfileBtn"),
+  loading: document.getElementById("profileLoading"),
+  manageOverlay: document.getElementById("manageOverlay"),
+  manageGrid: document.getElementById("manageGrid"),
+  manageClose: document.getElementById("manageCloseBtn"),
+  avatar: document.getElementById("profileAvatar"),
+  menu: document.getElementById("profileMenu"),
+  switchBtn: document.getElementById("switchProfileBtn"),
+  manageBtn: document.getElementById("manageProfilesBtn"),
+};
+
 let activeItem = null;
 let activeSeason = null;
 let activeEpisode = null;
@@ -274,6 +290,7 @@ let currentPlayerItem = null;
 let currentPlayerSeason = null;
 let currentPlayerEpisode = null;
 let currentPlayerProgress = 0;
+let activeProfileId = loadStore(STORAGE_KEYS.activeProfile, null);
 
 const tmdbMeta = {
   config: null,
@@ -303,6 +320,19 @@ function loadStore(key, fallback) {
 
 function saveStore(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getProfileKey(baseKey) {
+  const id = activeProfileId || "guest";
+  return `${baseKey}:${id}`;
+}
+
+function loadProfileStore(baseKey, fallback) {
+  return loadStore(getProfileKey(baseKey), fallback);
+}
+
+function saveProfileStore(baseKey, value) {
+  saveStore(getProfileKey(baseKey), value);
 }
 
 function applySettings() {
@@ -446,7 +476,7 @@ function mergeData(items) {
 }
 
 function renderContinueWatching() {
-  const progressStore = loadStore(STORAGE_KEYS.progress, {});
+  const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   const entries = Object.values(progressStore)
     .filter((entry) => entry.progress > 1 && entry.progress < 95)
     .sort((a, b) => b.timestamp - a.timestamp);
@@ -479,7 +509,7 @@ function renderContinueWatching() {
       const updated = Object.fromEntries(
         Object.entries(progressStore).filter(([, value]) => value.tmdbId !== entry.tmdbId)
       );
-      saveStore(STORAGE_KEYS.progress, updated);
+    saveProfileStore(STORAGE_KEYS.progress, updated);
       renderContinueWatching();
     });
     actions.appendChild(removeBtn);
@@ -489,7 +519,7 @@ function renderContinueWatching() {
 }
 
 function renderMyList() {
-  const list = loadStore(STORAGE_KEYS.list, []);
+  const list = loadProfileStore(STORAGE_KEYS.list, []);
   elements.listRail.innerHTML = "";
   if (!list.length) {
     elements.listRail.innerHTML = "<div class=\"muted\">No saved titles yet.</div>";
@@ -592,13 +622,13 @@ function buildPlayerUrl(item, options = {}) {
 }
 
 function getLatestProgress(item) {
-  const progressStore = loadStore(STORAGE_KEYS.progress, {});
+  const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   const entries = Object.values(progressStore).filter((entry) => entry.tmdbId === item.tmdbId);
   return entries.sort((a, b) => b.timestamp - a.timestamp)[0];
 }
 
 function openPlayer(item, options = {}) {
-  const progressStore = loadStore(STORAGE_KEYS.progress, {});
+  const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   let season = options.season || item.season || 1;
   let episode = options.episode || item.episode || 1;
   let progress = 0;
@@ -639,14 +669,14 @@ function closePlayer() {
 }
 
 function toggleList(item) {
-  const list = loadStore(STORAGE_KEYS.list, []);
+  const list = loadProfileStore(STORAGE_KEYS.list, []);
   const index = list.indexOf(item.key);
   if (index >= 0) {
     list.splice(index, 1);
   } else {
     list.push(item.key);
   }
-  saveStore(STORAGE_KEYS.list, list);
+  saveProfileStore(STORAGE_KEYS.list, list);
   renderMyList();
 }
 
@@ -956,7 +986,7 @@ function handlePlayerEvents(event) {
   const data = payload.data;
   if (!data) return;
 
-  const progressStore = loadStore(STORAGE_KEYS.progress, {});
+  const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   const key = data.mediaType === "tv" ? `${data.id}:S${data.season}:E${data.episode}` : `${data.id}`;
 
   progressStore[key] = {
@@ -972,7 +1002,7 @@ function handlePlayerEvents(event) {
     timestamp: Date.now(),
   };
 
-  saveStore(STORAGE_KEYS.progress, progressStore);
+  saveProfileStore(STORAGE_KEYS.progress, progressStore);
   renderContinueWatching();
 }
 
@@ -1028,7 +1058,7 @@ function attachSettingsHandlers() {
     setSetting("reduceMotion", event.target.checked);
   });
   elements.settingClearHistory.addEventListener("click", () => {
-    saveStore(STORAGE_KEYS.progress, {});
+    saveProfileStore(STORAGE_KEYS.progress, {});
     renderContinueWatching();
   });
 }
@@ -1207,10 +1237,182 @@ function attachBaseHandlers() {
   window.addEventListener("message", handlePlayerEvents);
 }
 
+function getProfiles() {
+  const stored = loadStore(STORAGE_KEYS.profiles, null);
+  if (stored && Array.isArray(stored) && stored.length) return stored;
+  return [{ id: "guest", name: "Guest" }];
+}
+
+function saveProfiles(profiles) {
+  saveStore(STORAGE_KEYS.profiles, profiles);
+}
+
+function setActiveProfile(id) {
+  activeProfileId = id;
+  saveStore(STORAGE_KEYS.activeProfile, id);
+  if (profileElements.avatar) {
+    profileElements.avatar.textContent = getProfileInitials();
+  }
+}
+
+function getProfileInitials() {
+  const profiles = getProfiles();
+  const profile = profiles.find((p) => p.id === (activeProfileId || "guest")) || profiles[0];
+  const parts = (profile.name || "G").trim().split(" ");
+  return parts.slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+}
+
+function renderProfiles() {
+  if (!profileElements.grid) return;
+  const profiles = getProfiles();
+  profileElements.grid.innerHTML = "";
+  if (profileElements.loading) {
+    profileElements.loading.classList.add("hidden");
+  }
+  profiles.forEach((profile) => {
+    const card = document.createElement("div");
+    card.className = "profile-card";
+    const avatar = document.createElement("div");
+    avatar.className = "profile-avatar";
+    avatar.textContent = profile.name.slice(0, 2).toUpperCase();
+    const name = document.createElement("div");
+    name.className = "profile-name";
+    name.textContent = profile.name;
+    card.appendChild(avatar);
+    card.appendChild(name);
+    card.addEventListener("click", () => {
+      const intro = document.getElementById("introSequence");
+      if (intro) {
+        intro.classList.remove("hidden");
+        intro.classList.add("is-active");
+      }
+      if (profileElements.loading) {
+        profileElements.loading.classList.remove("hidden");
+      }
+      setTimeout(() => {
+        setActiveProfile(profile.id);
+        if (profileElements.loading) {
+          profileElements.loading.classList.add("hidden");
+        }
+        if (profileElements.overlay) {
+          profileElements.overlay.classList.add("hidden");
+        }
+        if (profileElements.menu) {
+          profileElements.menu.classList.add("hidden");
+        }
+        if (intro) {
+          intro.classList.remove("is-active");
+          intro.classList.add("hidden");
+        }
+      }, 2600);
+    });
+    profileElements.grid.appendChild(card);
+  });
+}
+
+function attachProfileHandlers() {
+  if (!profileElements.overlay) return;
+  profileElements.addBtn.addEventListener("click", () => {
+    const name = prompt("Profile name");
+    if (!name) return;
+    const profiles = getProfiles();
+    const id = `p_${Date.now()}`;
+    profiles.push({ id, name });
+    saveProfiles(profiles);
+    renderProfiles();
+  });
+
+  if (profileElements.avatar && profileElements.menu) {
+    profileElements.avatar.addEventListener("click", () => {
+      profileElements.menu.classList.toggle("hidden");
+    });
+  }
+
+  if (profileElements.switchBtn) {
+    profileElements.switchBtn.addEventListener("click", () => {
+      profileElements.menu?.classList.add("hidden");
+      profileElements.overlay.classList.remove("hidden");
+    });
+  }
+
+  if (profileElements.manageBtn) {
+    profileElements.manageBtn.addEventListener("click", () => {
+      profileElements.menu?.classList.add("hidden");
+      renderManageProfiles();
+      profileElements.manageOverlay.classList.remove("hidden");
+    });
+  }
+
+  if (profileElements.manageClose) {
+    profileElements.manageClose.addEventListener("click", () => {
+      profileElements.manageOverlay.classList.add("hidden");
+    });
+  }
+}
+
+function renderManageProfiles() {
+  if (!profileElements.manageGrid) return;
+  const profiles = getProfiles();
+  profileElements.manageGrid.innerHTML = "";
+  profiles.forEach((profile) => {
+    const card = document.createElement("div");
+    card.className = "profile-card manage-card";
+    const avatar = document.createElement("div");
+    avatar.className = "profile-avatar";
+    avatar.textContent = profile.name.slice(0, 2).toUpperCase();
+    const name = document.createElement("div");
+    name.className = "profile-name";
+    name.textContent = profile.name;
+    const actions = document.createElement("div");
+    actions.className = "manage-actions";
+    const rename = document.createElement("button");
+    rename.className = "tiny-btn";
+    rename.textContent = "Rename";
+    rename.addEventListener("click", () => {
+      const next = prompt("New name", profile.name);
+      if (!next) return;
+      const updated = profiles.map((p) => (p.id === profile.id ? { ...p, name: next } : p));
+      saveProfiles(updated);
+      renderProfiles();
+      renderManageProfiles();
+      if (activeProfileId === profile.id) {
+        setActiveProfile(profile.id);
+      }
+    });
+    actions.appendChild(rename);
+    if (profile.id !== "guest") {
+      const remove = document.createElement("button");
+      remove.className = "tiny-btn";
+      remove.textContent = "Delete";
+      remove.addEventListener("click", () => {
+        const filtered = profiles.filter((p) => p.id !== profile.id);
+        saveProfiles(filtered);
+        if (activeProfileId === profile.id) {
+          setActiveProfile("guest");
+        }
+        renderProfiles();
+        renderManageProfiles();
+      });
+      actions.appendChild(remove);
+    }
+    card.appendChild(avatar);
+    card.appendChild(name);
+    card.appendChild(actions);
+    profileElements.manageGrid.appendChild(card);
+  });
+}
+
 async function boot() {
   applySettings();
   attachSettingsHandlers();
   attachBaseHandlers();
+  attachProfileHandlers();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
 
   try {
     const tmdbData = await loadTmdbData();
@@ -1224,6 +1426,13 @@ async function boot() {
   const hero = (SECTION_DATA?.essentials?.[0]) || DATA.find((item) => item.hero) || DATA[0];
   setHero(hero);
   applyView("home");
+
+  renderProfiles();
+  if (!activeProfileId) {
+    profileElements.overlay.classList.remove("hidden");
+  } else if (profileElements.avatar) {
+    profileElements.avatar.textContent = getProfileInitials();
+  }
 }
 
 boot();
