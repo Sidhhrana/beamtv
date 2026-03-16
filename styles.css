@@ -906,29 +906,99 @@ main {
 
 @media (max-width: 720px) {
   .topbar {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4vw;
   }
 
   .actions {
-    width: 100%;
-    justify-content: space-between;
+    margin-left: auto;
+    gap: 10px;
   }
 
-  .search input {
-    width: 180px;
+  .brand-name {
+    font-size: 16px;
   }
 
   .hero-inner {
-    padding: 28px;
+    padding: 22px 5vw 20px;
   }
 
   .hero h1 {
-    font-size: 34px;
+    font-size: 26px;
   }
 
   .rail {
-    grid-auto-columns: 180px;
+    grid-auto-columns: 70vw;
+    padding: 6px 36px 12px;
+  }
+
+  .rail-btn {
+    display: none;
+  }
+
+  .card img {
+    height: 40vw;
+  }
+
+  .profile-shell {
+    width: min(520px, 90vw);
+  }
+
+  .profile-title {
+    font-size: 22px;
+  }
+
+  .profile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .search-modal {
+    width: 92vw;
+    max-height: 85vh;
+  }
+
+  .search-results {
+    max-height: 52vh;
+  }
+
+  .search-bar {
+    padding: 10px 12px;
+  }
+
+  .search-bar input {
+    font-size: 15px;
+  }
+
+  .hero-right {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero {
+    min-height: 30vh;
+    border-radius: 16px;
+  }
+
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .card {
+    border-radius: 14px;
+  }
+
+  .card-body {
+    padding: 10px 12px;
+  }
+
+  .profile-avatar {
+    width: 58px;
+    height: 58px;
   }
 }
 
@@ -943,8 +1013,8 @@ main {
   z-index: 40;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at 20% 10%, rgba(80, 80, 95, 0.18) 0%, transparent 45%),
-              radial-gradient(circle at 80% 20%, rgba(40, 40, 50, 0.25) 0%, transparent 50%),
+  background: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.08) 0%, transparent 45%),
+              radial-gradient(circle at 80% 20%, rgba(120, 120, 140, 0.22) 0%, transparent 50%),
               #0a0a0b;
 }
 
@@ -976,7 +1046,7 @@ main {
 .intro-sequence.is-active {
   opacity: 1;
   pointer-events: auto;
-  animation: hideIntro 0s 2.6s forwards;
+  animation: hideIntro 0s 3.2s forwards;
 }
 
 .strike-line {
@@ -987,22 +1057,22 @@ main {
   width: 0;
   height: 2px;
   background: #fff;
-  box-shadow: 0 0 20px 5px rgba(245, 245, 247, 0.6);
+  box-shadow: 0 0 20px 5px #e50914;
   z-index: 5;
-  animation: strikeAnim 0.7s ease-out forwards;
+  animation: strikeAnim 0.9s ease-out forwards;
 }
 
 .beam-text {
   font-size: 18vw;
-  color: #ffffff;
+  color: #e50914;
   position: relative;
   z-index: 10;
   transform-origin: center center;
   opacity: 0;
   letter-spacing: 0.4vw;
   animation:
-    textAppear 1.8s 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards,
-    textZoom 1.1s 1.9s cubic-bezier(0.9, 0, 0.1, 1) forwards;
+    textAppear 2.2s 0.3s cubic-bezier(0.19, 1, 0.22, 1) forwards,
+    textZoom 1.4s 2.4s cubic-bezier(0.9, 0, 0.1, 1) forwards;
 }
 
 .beam-text::before,
@@ -1017,13 +1087,13 @@ main {
 }
 
 .beam-text::before {
-  color: rgba(255, 255, 255, 0.6);
-  animation: splitCyan 1.1s 1.9s cubic-bezier(0.9, 0, 0.1, 1) forwards;
+  color: #0ff;
+  animation: splitCyan 1.4s 2.4s cubic-bezier(0.9, 0, 0.1, 1) forwards;
 }
 
 .beam-text::after {
-  color: rgba(255, 255, 255, 0.35);
-  animation: splitMagenta 1.1s 1.9s cubic-bezier(0.9, 0, 0.1, 1) forwards;
+  color: #f0f;
+  animation: splitMagenta 1.4s 2.4s cubic-bezier(0.9, 0, 0.1, 1) forwards;
 }
 
 .light-sweep {
@@ -1034,16 +1104,17 @@ main {
   height: 100vh;
   background: linear-gradient(to right,
       transparent 0%,
-      rgba(255, 255, 255, 0.4) 25%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0.35) 75%,
+      rgba(255, 0, 0, 0.6) 20%,
+      rgba(255, 165, 0, 0.4) 40%,
+      rgba(0, 255, 255, 0.4) 60%,
+      rgba(255, 0, 255, 0.4) 80%,
       transparent 100%
   );
   background-size: 200% 100%;
   opacity: 0;
   filter: blur(24px);
   z-index: 2;
-  animation: sweepMotion 1.1s 1.9s cubic-bezier(0.9, 0, 0.1, 1) forwards;
+  animation: sweepMotion 1.4s 2.4s cubic-bezier(0.9, 0, 0.1, 1) forwards;
 }
 
 .flash-transition {
@@ -1052,7 +1123,7 @@ main {
   background: #000;
   opacity: 0;
   z-index: 20;
-  animation: flashAnim 0.6s 2.2s ease-in forwards;
+  animation: flashAnim 0.8s 2.8s ease-in forwards;
 }
 
 @keyframes strikeAnim {
@@ -1088,8 +1159,8 @@ main {
 }
 
 @keyframes flashAnim {
-  0% { background: #ffffff; opacity: 0; }
-  40% { background: #ffffff; opacity: 1; }
+  0% { background: #e50914; opacity: 0; }
+  40% { background: #e50914; opacity: 1; }
   100% { background: #000000; opacity: 1; }
 }
 
@@ -1150,59 +1221,68 @@ main {
 .profile-shell {
   width: min(980px, 92vw);
   display: grid;
-  gap: 20px;
+  gap: 22px;
   text-align: center;
+  padding: 28px 24px;
+  border-radius: 26px;
+  background: rgba(14, 14, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
 .profile-brand {
-  font-size: 16px;
-  letter-spacing: 6px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  letter-spacing: 8px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .profile-title {
-  font-size: 32px;
-  font-weight: 600;
+  font-size: 44px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.6px;
 }
 
 .profile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 22px;
 }
 
 .profile-card {
-  background: rgba(18, 18, 20, 0.8);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 16px 12px;
+  border-radius: 22px;
+  padding: 18px 12px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
-  transition: transform 0.2s ease, border 0.2s ease, background 0.2s ease;
+  transition: transform 0.25s ease, border 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .profile-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px) scale(1.02);
   border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.45);
 }
 
 .profile-avatar {
-  width: 78px;
-  height: 78px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.12);
+  width: 86px;
+  height: 86px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 22px;
   margin: 0 auto;
 }
 
 .profile-name {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .profile-loading {

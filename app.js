@@ -1304,7 +1304,7 @@ function renderProfiles() {
           intro.classList.remove("is-active");
           intro.classList.add("hidden");
         }
-      }, 2600);
+      }, 3200);
     });
     profileElements.grid.appendChild(card);
   });
