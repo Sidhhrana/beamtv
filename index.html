@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Beam - Stream Bold</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260316-1" />
 </head>
 <body>
   <div class="bg-sheen"></div>
@@ -12,37 +12,55 @@
 
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark"></span>
-      <div>
-        <div class="brand-name">Beam</div>
-        <div class="brand-sub">iOS blue edition</div>
-      </div>
+      <img class="brand-mark" src="https://i.ibb.co/Y4gscFwJ/image.png" alt="Beam" />
+      <div class="brand-name">Beam</div>
     </div>
     <nav class="nav">
-      <a class="nav-link is-active" href="#">Home</a>
-      <a class="nav-link" href="#">Series</a>
-      <a class="nav-link" href="#">Movies</a>
-      <a class="nav-link" href="#">Collections</a>
-      <a class="nav-link" href="#">My List</a>
+      <a class="nav-link is-active" href="#" data-view="home">Home</a>
+      <a class="nav-link" href="#" data-view="series">Series</a>
+      <a class="nav-link" href="#" data-view="movies">Movies</a>
+      <a class="nav-link" href="#" data-view="collections">Collections</a>
+      <a class="nav-link" href="#" data-view="list">My List</a>
+      <a id="settingsNav" class="nav-link" href="#">Settings</a>
     </nav>
     <div class="actions">
-      <div class="search">
-        <input id="searchInput" type="search" placeholder="Search titles, moods, genres" />
-        <span class="search-icon">Ctrl K</span>
-      </div>
+      <button id="searchToggle" class="icon-btn" aria-label="Search">
+        <img class="icon-img" src="https://i.ibb.co/Kj84X57R/image-removebg-preview.png" alt="Search" />
+      </button>
       <button id="shuffleBtn" class="ghost-btn">Shuffle</button>
       <div class="avatar">SK</div>
     </div>
   </header>
 
-  <main>
+  <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true">
+    <div class="overlay-scrim"></div>
+    <div class="search-modal">
+      <div class="search-bar">
+        <img class="icon-img small" src="https://i.ibb.co/Kj84X57R/image-removebg-preview.png" alt="" />
+        <input id="searchInput" type="search" placeholder="Search titles, genres, people" />
+      </div>
+      <div class="search-hint muted">Start typing to explore.</div>
+      <div id="searchSection" class="search-section hidden">
+        <div class="section-head">
+          <h2>Search Results</h2>
+          <p id="searchCount">0 results</p>
+        </div>
+        <div class="search-results">
+          <div id="searchGrid" class="grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="page">
     <section id="hero" class="hero">
       <div id="heroBackdrop" class="hero-backdrop"></div>
+      <div class="hero-shade"></div>
       <div class="hero-inner">
         <div class="hero-left">
-          <div class="pill">Featured Tonight</div>
+          <div class="pill pill-subtle">Featured</div>
           <h1 id="heroTitle">Eclipse Harbor</h1>
-          <p id="heroDesc">A neon harbor, a missing captain, and a city that forgets its own tide.</p>
+          <p id="heroDesc" class="hero-desc">A neon harbor, a missing captain, and a city that forgets its own tide.</p>
           <div class="hero-meta">
             <span id="heroYear">2026</span>
             <span class="dot">|</span>
@@ -63,71 +81,115 @@
             <div class="hero-glow"></div>
           </div>
           <div class="hero-stack">
-            <div class="stack-card">Top picks for your blue nights</div>
-            <div class="stack-card">Audio: Spatial Vibe</div>
-            <div class="stack-card">New episodes weekly</div>
+            <div class="stack-card">Now trending in your region</div>
+            <div class="stack-card">Handpicked for late nights</div>
+            <div class="stack-card">Updated daily</div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="chip-row">
-      <button class="chip is-active">For You</button>
-      <button class="chip">Neon Noir</button>
-      <button class="chip">Sci-Fi Drift</button>
-      <button class="chip">Mystery</button>
-      <button class="chip">Late Night</button>
-      <button class="chip">Minimal</button>
-    </section>
-
     <section id="continueSection" class="rail-section">
       <div class="section-head">
-        <h2>Continue Watching</h2>
-        <p>Pick up right where you left off</p>
+        <h2>Continue</h2>
+        <p>Pick up where you left off</p>
       </div>
-      <div id="continueRail" class="rail"></div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="continueRail" aria-label="Scroll left">‹</button>
+        <div id="continueRail" class="rail"></div>
+        <button class="rail-btn right" data-rail="continueRail" aria-label="Scroll right">›</button>
+      </div>
     </section>
 
     <section id="listSection" class="rail-section">
       <div class="section-head">
-        <h2>My List</h2>
-        <p>Saved for later</p>
+        <h2>My Library</h2>
+        <p>Saved titles</p>
       </div>
-      <div id="listRail" class="rail"></div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="listRail" aria-label="Scroll left">‹</button>
+        <div id="listRail" class="rail"></div>
+        <button class="rail-btn right" data-rail="listRail" aria-label="Scroll right">›</button>
+      </div>
     </section>
 
-    <section class="rail-section">
+    <section id="essentialsSection" class="rail-section">
       <div class="section-head">
-        <h2>Beam Essentials</h2>
-        <p>Hand-picked for long nights</p>
+        <h2>Featured</h2>
+        <p>Editor picks</p>
       </div>
-      <div id="railEssentials" class="rail"></div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="railEssentials" aria-label="Scroll left">‹</button>
+        <div id="railEssentials" class="rail"></div>
+        <button class="rail-btn right" data-rail="railEssentials" aria-label="Scroll right">›</button>
+      </div>
     </section>
 
-    <section class="rail-section">
+    <section id="moviesSection" class="rail-section">
       <div class="section-head">
-        <h2>Electric Blue</h2>
-        <p>Cool tone, high voltage</p>
+        <h2>Popular Movies</h2>
+        <p>Trending now</p>
       </div>
-      <div id="railBlue" class="rail"></div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="railBlue" aria-label="Scroll left">‹</button>
+        <div id="railBlue" class="rail"></div>
+        <button class="rail-btn right" data-rail="railBlue" aria-label="Scroll right">›</button>
+      </div>
     </section>
 
-    <section class="rail-section">
+    <section id="seriesSection" class="rail-section">
       <div class="section-head">
-        <h2>New on Beam</h2>
-        <p>Fresh drops and premieres</p>
+        <h2>Popular Series</h2>
+        <p>Fresh episodes</p>
       </div>
-      <div id="railNew" class="rail"></div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="railNew" aria-label="Scroll left">‹</button>
+        <div id="railNew" class="rail"></div>
+        <button class="rail-btn right" data-rail="railNew" aria-label="Scroll right">›</button>
+      </div>
     </section>
 
-    <section id="searchSection" class="search-section hidden">
+    <section id="topRatedMoviesSection" class="rail-section">
       <div class="section-head">
-        <h2>Search Results</h2>
-        <p id="searchCount">0 results</p>
+        <h2>Top Rated Movies</h2>
+        <p>Critically acclaimed</p>
       </div>
-      <div id="searchGrid" class="grid"></div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="railTopMovies" aria-label="Scroll left">‹</button>
+        <div id="railTopMovies" class="rail"></div>
+        <button class="rail-btn right" data-rail="railTopMovies" aria-label="Scroll right">›</button>
+      </div>
+    </section>
+
+    <section id="topRatedSeriesSection" class="rail-section">
+      <div class="section-head">
+        <h2>Top Rated Series</h2>
+        <p>Fan favorites</p>
+      </div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="railTopSeries" aria-label="Scroll left">‹</button>
+        <div id="railTopSeries" class="rail"></div>
+        <button class="rail-btn right" data-rail="railTopSeries" aria-label="Scroll right">›</button>
+      </div>
+    </section>
+
+    <section id="upcomingSection" class="rail-section">
+      <div class="section-head">
+        <h2>Upcoming Movies</h2>
+        <p>Coming soon</p>
+      </div>
+      <div class="rail-wrap">
+        <button class="rail-btn left" data-rail="railUpcoming" aria-label="Scroll left">‹</button>
+        <div id="railUpcoming" class="rail"></div>
+        <button class="rail-btn right" data-rail="railUpcoming" aria-label="Scroll right">›</button>
+      </div>
     </section>
   </main>
+
+  <footer class="footer">
+    <div>Made by Sidhh with love and a lot of braincells 💕💕</div>
+    <div class="muted">Contact: iamsidhh@gmail.com · CC BY-NC · © 2026 Beam</div>
+  </footer>
 
   <div id="detailOverlay" class="overlay hidden" aria-hidden="true">
     <div class="overlay-scrim"></div>
@@ -149,6 +211,18 @@
           <div id="detailMeta" class="detail-meta"></div>
           <p id="detailDesc" class="detail-desc"></p>
           <div id="detailTags" class="detail-tags"></div>
+          <div id="detailSeries" class="detail-series hidden">
+            <div class="series-controls">
+              <div>
+                <div class="label">Season</div>
+                <select id="seasonSelect" class="select"></select>
+              </div>
+              <div class="series-actions">
+                <button id="seriesPlay" class="primary-btn">Play Episode</button>
+              </div>
+            </div>
+            <div id="episodeList" class="episode-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -162,6 +236,12 @@
         <div class="player-meta">
           <strong id="playerTitle"></strong>
           <div id="playerSub" class="muted"></div>
+        </div>
+        <div class="player-controls">
+          <select id="playerProvider" class="select">
+            <option value="vidking">Vidking</option>
+            <option value="custom">Custom Provider</option>
+          </select>
         </div>
       </div>
       <div class="player-frame">
@@ -177,6 +257,173 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <div id="settingsOverlay" class="overlay hidden" aria-hidden="true">
+    <div class="overlay-scrim"></div>
+    <div class="settings-card">
+      <div class="settings-top">
+        <div>
+          <div class="settings-title">Settings</div>
+          <div class="muted">Customize playback, discovery, and UI</div>
+        </div>
+        <button id="settingsClose" class="ghost-btn">Done</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Playback</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Autoplay</div>
+            <div class="settings-desc">Start playback automatically</div>
+          </div>
+          <label class="switch">
+            <input id="settingAutoplay" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Next Episode</div>
+            <div class="settings-desc">Auto-advance in series</div>
+          </div>
+          <label class="switch">
+            <input id="settingNextEpisode" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Episode Selector</div>
+            <div class="settings-desc">Show selector in player</div>
+          </div>
+          <label class="switch">
+            <input id="settingEpisodeSelector" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Video Quality</div>
+            <div class="settings-desc">Preferred stream quality</div>
+          </div>
+          <select id="settingQuality" class="select">
+            <option value="auto">Auto</option>
+            <option value="1080">1080p</option>
+            <option value="720">720p</option>
+            <option value="480">480p</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Provider</div>
+            <div class="settings-desc">Choose your playback source</div>
+          </div>
+          <select id="settingProvider" class="select">
+            <option value="vidking">Vidking</option>
+            <option value="custom">Custom Provider</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Discovery</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Language</div>
+            <div class="settings-desc">Metadata language</div>
+          </div>
+          <select id="settingLanguage" class="select">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="hi-IN">Hindi (India)</option>
+            <option value="es-ES">Spanish (Spain)</option>
+            <option value="fr-FR">French</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Region</div>
+            <div class="settings-desc">Trending & popular region</div>
+          </div>
+          <select id="settingRegion" class="select">
+            <option value="US">United States</option>
+            <option value="IN">India</option>
+            <option value="GB">United Kingdom</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">18+ Content</div>
+            <div class="settings-desc">Show adult results in search</div>
+          </div>
+          <label class="switch">
+            <input id="settingAdult" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Appearance</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Accent Color</div>
+            <div class="settings-desc">Theme highlight color</div>
+          </div>
+          <select id="settingAccent" class="select">
+            <option value="#0a84ff">Blue</option>
+            <option value="#34c759">Green</option>
+            <option value="#ff9f0a">Amber</option>
+            <option value="#ff375f">Pink</option>
+            <option value="#bf5af2">Violet</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Compact Cards</div>
+            <div class="settings-desc">Reduce card height in rails</div>
+          </div>
+          <label class="switch">
+            <input id="settingCompactCards" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Show Ratings</div>
+            <div class="settings-desc">Display rating badges</div>
+          </div>
+          <label class="switch">
+            <input id="settingShowRatings" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Data</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Reduce Motion</div>
+            <div class="settings-desc">Minimize animations</div>
+          </div>
+          <label class="switch">
+            <input id="settingReduceMotion" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Clear Watch History</div>
+            <div class="settings-desc">Reset progress and continue list</div>
+          </div>
+          <button id="settingClearHistory" class="ghost-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260316-1"></script>
 </body>
 </html>

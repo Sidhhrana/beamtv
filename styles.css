@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Cabin:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #07101f;
-  --bg-2: #0a1630;
-  --glass: rgba(9, 18, 38, 0.7);
-  --glass-strong: rgba(9, 18, 38, 0.92);
-  --text: #e8f1ff;
-  --muted: #93a7c7;
-  --accent: #0a84ff;
-  --accent-2: #65c7ff;
-  --card: rgba(10, 20, 42, 0.82);
-  --stroke: rgba(120, 150, 200, 0.22);
-  --shadow: 0 25px 70px rgba(5, 10, 22, 0.55);
+  --bg: #0a0a0b;
+  --bg-2: #0a0a0b;
+  --glass: rgba(10, 10, 12, 0.7);
+  --glass-strong: rgba(10, 10, 12, 0.92);
+  --text: #ffffff;
+  --muted: #9a9aa0;
+  --accent: #f2f2f7;
+  --accent-2: #d1d1d6;
+  --card: #151518;
+  --stroke: rgba(255, 255, 255, 0.06);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 
 * {
@@ -21,20 +21,37 @@
 }
 
 body {
-  font-family: "Cabin", sans-serif;
-  background: radial-gradient(circle at 18% 18%, #14264e 0%, transparent 35%),
-              radial-gradient(circle at 78% 12%, #0b2d5a 0%, transparent 40%),
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 20% 10%, rgba(80, 80, 95, 0.18) 0%, transparent 45%),
+              radial-gradient(circle at 80% 20%, rgba(40, 40, 50, 0.25) 0%, transparent 50%),
               linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
 }
 
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
 .bg-sheen {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at 60% 30%, rgba(101, 199, 255, 0.18), transparent 55%),
-              radial-gradient(circle at 20% 80%, rgba(10, 132, 255, 0.22), transparent 40%);
+  background: radial-gradient(circle at 60% 20%, rgba(110, 110, 125, 0.18), transparent 55%),
+              radial-gradient(circle at 20% 80%, rgba(30, 30, 40, 0.22), transparent 45%);
   pointer-events: none;
   z-index: 0;
 }
@@ -42,8 +59,8 @@ body {
 .bg-grid {
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(rgba(120, 150, 200, 0.08) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(120, 150, 200, 0.08) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 48px 48px;
   opacity: 0.12;
   pointer-events: none;
@@ -58,25 +75,25 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 20px 6vw;
-  background: rgba(4, 8, 20, 0.75);
+  padding: 18px 6vw;
+  background: rgba(12, 12, 14, 0.75);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(120, 150, 190, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-family: "Outfit", sans-serif;
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .brand-mark {
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(140deg, #0a84ff, #5fd1ff);
-  border-radius: 5px;
-  box-shadow: 0 0 20px rgba(10, 132, 255, 0.8);
+  width: 22px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(245, 245, 247, 0.45);
 }
 
 .brand-name {
@@ -98,8 +115,10 @@ body {
 .nav-link {
   text-decoration: none;
   color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
   padding: 6px 0;
   border-bottom: 2px solid transparent;
 }
@@ -107,13 +126,45 @@ body {
 .nav-link.is-active,
 .nav-link:hover {
   color: var(--text);
-  border-bottom-color: var(--accent);
+  border-bottom-color: rgba(255, 255, 255, 0.6);
 }
 
 .actions {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.icon-img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.9;
+  display: block;
+}
+
+.icon-img.small {
+  width: 16px;
+  height: 16px;
+}
+
+.avatar {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .search {
@@ -146,10 +197,10 @@ body {
 
 .ghost-btn,
 .primary-btn {
-  border: 1px solid var(--stroke);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   padding: 10px 16px;
-  background: rgba(14, 24, 46, 0.7);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   cursor: pointer;
   font-weight: 600;
@@ -157,23 +208,23 @@ body {
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #0a84ff, #6bc8ff);
+  background: linear-gradient(135deg, #ffffff, #d1d1d6);
   border: none;
-  color: #04132a;
+  color: #0b0b0d;
 }
 
 .ghost-btn:hover,
 .primary-btn:hover {
   transform: translateY(-1px) scale(1.02);
-  background: rgba(20, 34, 64, 0.9);
-  border-color: rgba(10, 132, 255, 0.6);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .avatar {
   width: 38px;
   height: 38px;
-  background: linear-gradient(140deg, #0a84ff, #2ce0ff);
-  color: #031024;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
   font-weight: 700;
   border-radius: 14px;
   display: grid;
@@ -219,7 +270,7 @@ main {
 }
 
 .hero h1 {
-  font-family: "Outfit", sans-serif;
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 46px;
   letter-spacing: 0.3px;
 }
@@ -266,7 +317,7 @@ main {
 .hero-glow {
   position: absolute;
   inset: 0;
-  box-shadow: inset 0 0 60px rgba(10, 132, 255, 0.4);
+  box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
 
@@ -285,14 +336,18 @@ main {
 }
 
 .pill {
-  background: rgba(10, 132, 255, 0.2);
-  border: 1px solid rgba(10, 132, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 4px 10px;
   display: inline-flex;
-  font-size: 11px;
-  letter-spacing: 0.6px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
+}
+
+.pill-subtle {
+  color: var(--muted);
 }
 
 .dot {
@@ -328,8 +383,8 @@ main {
 .chip.is-active,
 .chip:hover {
   color: var(--text);
-  border-color: rgba(10, 132, 255, 0.6);
-  background: rgba(14, 28, 54, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .rail-section {
@@ -344,7 +399,7 @@ main {
 }
 
 .section-head h2 {
-  font-family: "Outfit", sans-serif;
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 22px;
 }
 
@@ -359,6 +414,7 @@ main {
   grid-auto-columns: 220px;
   gap: 18px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: 12px;
   scrollbar-width: thin;
 }
@@ -385,8 +441,53 @@ main {
   object-fit: cover;
 }
 
+.card.card-series {
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.card.card-movie {
+  border-left: 3px solid rgba(255, 255, 255, 0.12);
+}
+
 .card-body {
   padding: 14px;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--stroke);
+  background: rgba(12, 22, 44, 0.8);
+  color: var(--muted);
+}
+
+.badge.strong {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.rating-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0b0b0d;
+  background: linear-gradient(135deg, #f5f5f7, #d1d1d6);
+  padding: 4px 8px;
+  border-radius: 999px;
 }
 
 .card-title {
@@ -408,10 +509,26 @@ main {
   overflow: hidden;
 }
 
+.card-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.remove-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 .progress-bar span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #0a84ff, #6dd3ff);
+  background: linear-gradient(90deg, #f5f5f7, #d1d1d6);
   width: 0;
 }
 
@@ -477,7 +594,7 @@ main {
 
 .detail-info h3 {
   font-size: 28px;
-  font-family: "Outfit", sans-serif;
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .detail-meta {
@@ -488,7 +605,7 @@ main {
 
 .detail-desc {
   line-height: 1.6;
-  color: #d4e3ff;
+  color: rgba(245, 245, 247, 0.78);
   margin-top: 16px;
 }
 
@@ -497,6 +614,95 @@ main {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
+}
+
+.detail-series {
+  margin-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.series-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.series-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.select {
+  background: rgba(12, 22, 44, 0.75);
+  border: 1px solid var(--stroke);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 12px;
+  outline: none;
+  min-width: 180px;
+}
+
+.episode-list {
+  display: grid;
+  gap: 10px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.episode-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: rgba(10, 20, 42, 0.75);
+  padding: 10px;
+  cursor: pointer;
+  transition: border 0.2s ease, transform 0.2s ease;
+}
+
+.episode-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.episode-item.is-active {
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.episode-thumb {
+  width: 100%;
+  height: 76px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #050914;
+}
+
+.episode-meta {
+  display: grid;
+  gap: 6px;
+}
+
+.episode-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.episode-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 .player-card {
@@ -519,6 +725,18 @@ main {
   gap: 12px;
 }
 
+.player-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.player-controls .select {
+  min-width: 180px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
 .player-frame {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -531,6 +749,136 @@ main {
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.settings-card {
+  position: relative;
+  z-index: 1;
+  background: var(--glass-strong);
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  width: min(860px, 94vw);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 20px;
+  max-height: 78vh;
+  overflow-y: auto;
+}
+
+.settings-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.settings-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-title {
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 28px;
+}
+
+.settings-group {
+  background: rgba(10, 20, 42, 0.6);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.settings-group-title {
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(120, 150, 200, 0.12);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-label {
+  font-weight: 600;
+}
+
+.settings-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(120, 150, 200, 0.2);
+  transition: 0.2s;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 2px;
+  background: white;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background: linear-gradient(135deg, #f5f5f7, #d1d1d6);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.compact-cards .card img {
+  height: 240px;
+}
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  transition: none !important;
+  animation: none !important;
 }
 
 .muted {
@@ -582,4 +930,298 @@ main {
   .rail {
     grid-auto-columns: 180px;
   }
+}
+
+/* Apple TV-inspired layout */
+.page {
+  padding-top: 88px;
+}
+
+.footer {
+  margin: 30px 6vw 40px;
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.topbar {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(18, 18, 18, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(245, 245, 247, 0.35));
+}
+
+.brand-name {
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: start center;
+  padding-top: 120px;
+  overflow-y: auto;
+}
+
+.search-overlay .overlay-scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.search-overlay.hidden {
+  display: none;
+}
+
+.search-modal {
+  width: min(720px, 92vw);
+  background: rgba(16, 16, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  animation: glassIn 0.25s ease;
+  max-height: 72vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 10px 14px;
+}
+
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+}
+
+.search-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.search-results {
+  margin-top: 14px;
+  max-height: 46vh;
+  overflow-y: auto;
+  padding-right: 6px;
+  flex: 1;
+}
+
+.search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.hero {
+  margin: 0 0 18px;
+  border: none;
+  border-radius: 24px;
+  min-height: 36vh;
+}
+
+.hero-backdrop {
+  opacity: 0.7;
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10, 10, 12, 0.95) 0%, rgba(10, 10, 12, 0.75) 40%, rgba(10, 10, 12, 0.2) 65%, rgba(10, 10, 12, 0.05) 100%);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  padding: 30px 6vw 26px;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 36px;
+}
+
+.hero h1 {
+  font-size: 30px;
+}
+
+.hero-desc {
+  color: rgba(245, 245, 247, 0.72);
+  line-height: 1.6;
+}
+
+.hero-poster {
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  max-width: 260px;
+  justify-self: end;
+}
+
+.platforms {
+  margin: 0 6vw 18px;
+}
+
+.platforms-title {
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.platforms-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.platform-card {
+  background: rgba(24, 24, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.rail-section {
+  margin-top: 12px;
+}
+
+.rail {
+  padding: 6px 44px 14px;
+  grid-auto-columns: 300px;
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  height: 0;
+}
+
+@keyframes glassIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rail-wrap {
+  position: relative;
+}
+
+.rail-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(18, 18, 18, 0.5);
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.rail-wrap:hover .rail-btn {
+  opacity: 1;
+}
+
+.rail-btn.left {
+  left: 6px;
+}
+
+.rail-btn.right {
+  right: 6px;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  transform-origin: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.card img {
+  height: 168px;
+  object-fit: cover;
+}
+
+.card-body {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(12, 12, 14, 0) 0%, rgba(12, 12, 14, 0.8) 70%);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.03);
+}
+
+.card:hover .card-body {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card.has-progress .card-body {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card-top {
+  margin-bottom: 6px;
+}
+
+.primary-btn,
+.ghost-btn {
+  border-radius: 999px;
+}
+.hero-actions {
+  margin-top: 4px;
 }
