@@ -199,6 +199,7 @@ const DEFAULT_SETTINGS = {
   compactCards: false,
   showRatings: true,
   reduceMotion: false,
+  tvMode: false,
 };
 
 const elements = {
@@ -263,6 +264,7 @@ const elements = {
   settingCompactCards: document.getElementById("settingCompactCards"),
   settingShowRatings: document.getElementById("settingShowRatings"),
   settingReduceMotion: document.getElementById("settingReduceMotion"),
+  settingTvMode: document.getElementById("settingTvMode"),
   settingClearHistory: document.getElementById("settingClearHistory"),
 };
 
@@ -355,6 +357,7 @@ function syncSettingsUI() {
   elements.settingCompactCards.checked = settings.compactCards;
   elements.settingShowRatings.checked = settings.showRatings;
   elements.settingReduceMotion.checked = settings.reduceMotion;
+  elements.settingTvMode.checked = settings.tvMode;
 }
 
 function getAccent2(color) {
@@ -1057,6 +1060,10 @@ function attachSettingsHandlers() {
   elements.settingReduceMotion.addEventListener("change", (event) => {
     setSetting("reduceMotion", event.target.checked);
   });
+  elements.settingTvMode.addEventListener("change", (event) => {
+    setSetting("tvMode", event.target.checked);
+    updateTvMode();
+  });
   elements.settingClearHistory.addEventListener("click", () => {
     saveProfileStore(STORAGE_KEYS.progress, {});
     renderContinueWatching();
@@ -1408,6 +1415,8 @@ async function boot() {
   attachBaseHandlers();
   attachProfileHandlers();
 
+  initTvMode();
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
@@ -1436,3 +1445,77 @@ async function boot() {
 }
 
 boot();
+
+function initTvMode() {
+  updateTvMode();
+
+  const focusableSelector = [
+    "button",
+    "a.nav-link",
+    ".card",
+    ".profile-card",
+    ".menu-item",
+    ".select",
+    "input[type='search']",
+  ].join(",");
+
+  let currentIndex = 0;
+
+  function getFocusable() {
+    return Array.from(document.querySelectorAll(focusableSelector))
+      .filter((el) => !el.classList.contains("hidden") && el.offsetParent !== null);
+  }
+
+  function setFocus(index) {
+    const focusables = getFocusable();
+    if (!focusables.length) return;
+    currentIndex = Math.max(0, Math.min(index, focusables.length - 1));
+    focusables.forEach((el) => el.classList.remove("focus-ring"));
+    const el = focusables[currentIndex];
+    el.classList.add("focus-ring");
+    el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  if (settings.tvMode) {
+    setFocus(0);
+  }
+
+  window.addEventListener("keydown", (event) => {
+    if (!settings.tvMode) return;
+    const focusables = getFocusable();
+    if (!focusables.length) return;
+
+    const cols = window.innerWidth > 1200 ? 6 : window.innerWidth > 900 ? 4 : 2;
+    switch (event.key) {
+      case "ArrowRight":
+        event.preventDefault();
+        setFocus(currentIndex + 1);
+        break;
+      case "ArrowLeft":
+        event.preventDefault();
+        setFocus(currentIndex - 1);
+        break;
+      case "ArrowDown":
+        event.preventDefault();
+        setFocus(currentIndex + cols);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        setFocus(currentIndex - cols);
+        break;
+      case "Enter":
+        event.preventDefault();
+        focusables[currentIndex].click();
+        break;
+      default:
+        break;
+    }
+  });
+}
+
+function updateTvMode() {
+  document.body.classList.toggle("tv-mode", !!settings.tvMode);
+  if (!settings.tvMode) {
+    document.querySelectorAll(".focus-ring").forEach((el) => el.classList.remove("focus-ring"));
+  }
+}

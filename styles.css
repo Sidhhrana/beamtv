@@ -30,6 +30,45 @@ body {
   overflow-x: hidden;
 }
 
+body.tv-mode {
+  font-size: 18px;
+}
+
+.focus-ring {
+  outline: 3px solid rgba(245, 245, 247, 0.8);
+  outline-offset: 4px;
+}
+
+@media (min-width: 1600px) {
+  body {
+    font-size: 18px;
+  }
+
+  .topbar {
+    padding: 26px 6vw;
+  }
+
+  .nav-link {
+    font-size: 14px;
+  }
+
+  .hero h1 {
+    font-size: 46px;
+  }
+
+  .rail {
+    grid-auto-columns: 420px;
+  }
+
+  .card img {
+    height: 220px;
+  }
+
+  .section-head h2 {
+    font-size: 26px;
+  }
+}
+
 body::-webkit-scrollbar {
   width: 8px;
 }
