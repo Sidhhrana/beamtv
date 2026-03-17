@@ -12,6 +12,7 @@
   --card: #151518;
   --stroke: rgba(255, 255, 255, 0.06);
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  --text-scale: 1;
 }
 
 * {
@@ -28,6 +29,8 @@ body {
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+  font-size: calc(16px * var(--text-scale));
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
 body.tv-mode {
@@ -84,6 +87,41 @@ body::-webkit-scrollbar-track {
 
 .no-scroll {
   overflow: hidden;
+}
+
+body.hide-tags .hero-tags,
+body.hide-tags .detail-tags {
+  display: none;
+}
+
+body.glow-off .hero-glow,
+body.glow-off .card,
+body.glow-off .detail-card,
+body.glow-off .settings-card,
+body.glow-off .detail-full-card,
+body.glow-off .detail-more-card {
+  box-shadow: none;
+}
+
+body.dense-ui .rail {
+  grid-auto-columns: 300px;
+}
+
+body.dense-ui .card img {
+  height: 180px;
+}
+
+body.sharp-cards .card,
+body.sharp-cards .detail-card,
+body.sharp-cards .settings-card,
+body.sharp-cards .detail-full-card,
+body.sharp-cards .detail-more-card {
+  border-radius: 12px;
+}
+
+body.sharp-cards .card img,
+body.sharp-cards .detail-media img {
+  border-radius: 10px;
 }
 
 .bg-sheen {
@@ -1224,6 +1262,7 @@ main {
   gap: 20px;
   max-height: 78vh;
   overflow-y: auto;
+  animation: settings-pop 0.35s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 .settings-card::-webkit-scrollbar {
@@ -1270,10 +1309,18 @@ main {
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid rgba(120, 150, 200, 0.12);
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .settings-row:last-child {
   border-bottom: none;
+}
+
+.settings-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .settings-label {
@@ -1551,6 +1598,17 @@ main {
   .profile-avatar {
     width: 58px;
     height: 58px;
+  }
+}
+
+@keyframes settings-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

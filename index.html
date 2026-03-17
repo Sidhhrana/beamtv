@@ -236,8 +236,8 @@
 
     <section id="upcomingSection" class="rail-section">
       <div class="section-head">
-        <h2>Upcoming Movies</h2>
-        <p>Coming soon</p>
+        <h2>You Might Like</h2>
+        <p>Handpicked picks for you</p>
       </div>
       <div class="rail-wrap">
         <button class="rail-btn left" data-rail="railUpcoming" aria-label="Scroll left">‹</button>
@@ -372,7 +372,9 @@
         <div class="player-controls">
           <select id="playerProvider" class="select">
             <option value="vidking">Vidking</option>
-            <option value="custom">Custom Provider</option>
+            <option value="custom">XP</option>
+            <option value="custom2">67movies</option>
+            <option value="custom3">Flixer</option>
           </select>
         </div>
       </div>
@@ -451,7 +453,9 @@
           </div>
           <select id="settingProvider" class="select">
             <option value="vidking">Vidking</option>
-            <option value="custom">Custom Provider</option>
+            <option value="custom">Custom 1</option>
+            <option value="custom2">Custom 2</option>
+            <option value="custom3">Flixer</option>
           </select>
         </div>
       </div>
@@ -513,6 +517,28 @@
         </div>
         <div class="settings-row">
           <div>
+            <div class="settings-label">Theme</div>
+            <div class="settings-desc">Overall lighting and tone</div>
+          </div>
+          <select id="settingTheme" class="select">
+            <option value="nebula">Nebula</option>
+            <option value="noir">Noir</option>
+            <option value="ember">Ember</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Text Size</div>
+            <div class="settings-desc">Adjust UI scale</div>
+          </div>
+          <select id="settingTextScale" class="select">
+            <option value="small">Small</option>
+            <option value="normal">Normal</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
             <div class="settings-label">Compact Cards</div>
             <div class="settings-desc">Reduce card height in rails</div>
           </div>
@@ -530,6 +556,50 @@
             <input id="settingShowRatings" type="checkbox" />
             <span class="slider"></span>
           </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Show Tags</div>
+            <div class="settings-desc">Display genre chips</div>
+          </div>
+          <label class="switch">
+            <input id="settingShowTags" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Ambient Glow</div>
+            <div class="settings-desc">Soft highlights and shadows</div>
+          </div>
+          <label class="switch">
+            <input id="settingGlow" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">Interface</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">UI Density</div>
+            <div class="settings-desc">Spacing and layout tightness</div>
+          </div>
+          <select id="settingDensity" class="select">
+            <option value="comfortable">Comfortable</option>
+            <option value="compact">Compact</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Card Corners</div>
+            <div class="settings-desc">Roundness of surfaces</div>
+          </div>
+          <select id="settingCardRadius" class="select">
+            <option value="soft">Soft</option>
+            <option value="sharp">Sharp</option>
+          </select>
         </div>
       </div>
 

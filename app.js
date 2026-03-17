@@ -200,6 +200,12 @@ const DEFAULT_SETTINGS = {
   showRatings: true,
   reduceMotion: false,
   tvMode: false,
+  theme: "nebula",
+  textScale: "normal",
+  showTags: true,
+  glow: true,
+  uiDensity: "comfortable",
+  cardRadius: "soft",
 };
 
 const elements = {
@@ -283,6 +289,12 @@ const elements = {
   settingAccent: document.getElementById("settingAccent"),
   settingCompactCards: document.getElementById("settingCompactCards"),
   settingShowRatings: document.getElementById("settingShowRatings"),
+  settingTheme: document.getElementById("settingTheme"),
+  settingTextScale: document.getElementById("settingTextScale"),
+  settingShowTags: document.getElementById("settingShowTags"),
+  settingGlow: document.getElementById("settingGlow"),
+  settingDensity: document.getElementById("settingDensity"),
+  settingCardRadius: document.getElementById("settingCardRadius"),
   settingReduceMotion: document.getElementById("settingReduceMotion"),
   settingTvMode: document.getElementById("settingTvMode"),
   settingClearHistory: document.getElementById("settingClearHistory"),
@@ -305,7 +317,10 @@ const profileElements = {
 let activeItem = null;
 let activeSeason = null;
 let activeEpisode = null;
-let settings = loadStore(STORAGE_KEYS.settings, DEFAULT_SETTINGS);
+let settings = {
+  ...DEFAULT_SETTINGS,
+  ...loadStore(STORAGE_KEYS.settings, DEFAULT_SETTINGS),
+};
 let currentView = "home";
 let currentTypeFilter = null;
 let currentPlayerItem = null;
@@ -364,6 +379,40 @@ function applySettings() {
   document.documentElement.style.setProperty("--accent-2", getAccent2(settings.accent));
   document.body.classList.toggle("compact-cards", settings.compactCards);
   document.body.classList.toggle("reduce-motion", settings.reduceMotion);
+  document.body.classList.toggle("hide-tags", !settings.showTags);
+  document.body.classList.toggle("glow-off", !settings.glow);
+  document.body.classList.toggle("dense-ui", settings.uiDensity === "compact");
+  document.body.classList.toggle("sharp-cards", settings.cardRadius === "sharp");
+
+  const themes = {
+    nebula: {
+      bg: "#0a0a0b",
+      bg2: "#0b0b0f",
+      glass: "rgba(10, 10, 12, 0.7)",
+      glassStrong: "rgba(10, 10, 12, 0.92)",
+    },
+    noir: {
+      bg: "#050607",
+      bg2: "#0a0a0b",
+      glass: "rgba(8, 8, 10, 0.68)",
+      glassStrong: "rgba(8, 8, 10, 0.9)",
+    },
+    ember: {
+      bg: "#0b0606",
+      bg2: "#12090a",
+      glass: "rgba(16, 8, 8, 0.7)",
+      glassStrong: "rgba(16, 8, 8, 0.9)",
+    },
+  };
+
+  const theme = themes[settings.theme] || themes.nebula;
+  document.documentElement.style.setProperty("--bg", theme.bg);
+  document.documentElement.style.setProperty("--bg-2", theme.bg2);
+  document.documentElement.style.setProperty("--glass", theme.glass);
+  document.documentElement.style.setProperty("--glass-strong", theme.glassStrong);
+
+  const scaleMap = { small: 0.95, normal: 1, large: 1.05 };
+  document.documentElement.style.setProperty("--text-scale", scaleMap[settings.textScale] || 1);
 }
 
 function setPlatformClass() {
@@ -384,6 +433,12 @@ function syncSettingsUI() {
   elements.settingAccent.value = settings.accent;
   elements.settingCompactCards.checked = settings.compactCards;
   elements.settingShowRatings.checked = settings.showRatings;
+  elements.settingTheme.value = settings.theme;
+  elements.settingTextScale.value = settings.textScale;
+  elements.settingShowTags.checked = settings.showTags;
+  elements.settingGlow.checked = settings.glow;
+  elements.settingDensity.value = settings.uiDensity;
+  elements.settingCardRadius.value = settings.cardRadius;
   elements.settingReduceMotion.checked = settings.reduceMotion;
   elements.settingTvMode.checked = settings.tvMode;
 }
@@ -756,6 +811,20 @@ function buildPlayerUrl(item, options = {}) {
     } else {
       src = `${base}/watch/${item.tmdbId}`;
     }
+  } else if (settings.provider === "custom2") {
+    const base = "https://67movies.net";
+    if (item.type === "tv") {
+      src = `${base}/watch/tv/${item.tmdbId}/${options.season}/${options.episode}`;
+    } else {
+      src = `${base}/watch/movie/${item.tmdbId}`;
+    }
+  } else if (settings.provider === "custom3") {
+    const base = "https://flixer.su";
+    if (item.type === "tv") {
+      src = `${base}/watch/tv/${item.tmdbId}/${options.season}/${options.episode}`;
+    } else {
+      src = `${base}/watch/movie/${item.tmdbId}`;
+    }
   } else if (item.type === "tv") {
     src = `https://www.vidking.net/embed/tv/${item.tmdbId}/${options.season}/${options.episode}?color=${accent}&autoPlay=${autoPlay}&nextEpisode=${nextEpisode}&episodeSelector=${episodeSelector}`;
   } else {
@@ -804,6 +873,13 @@ function openPlayer(item, options = {}) {
   elements.playerFrame.src = src;
   elements.playerTitle.textContent = item.title;
   elements.playerSub.textContent = item.type === "tv" ? `Season ${season} - Episode ${episode}` : item.duration || "";
+  if (elements.playerFrame) {
+    if (settings.provider === "custom3") {
+      elements.playerFrame.removeAttribute("sandbox");
+    } else {
+      elements.playerFrame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
+    }
+  }
   elements.playerOverlay.classList.remove("hidden");
   elements.detailOverlay.classList.add("hidden");
   document.body.classList.add("no-scroll");
@@ -1202,6 +1278,24 @@ function attachSettingsHandlers() {
     setSetting("showRatings", event.target.checked);
     rerenderRails();
   });
+  elements.settingTheme.addEventListener("change", (event) => {
+    setSetting("theme", event.target.value);
+  });
+  elements.settingTextScale.addEventListener("change", (event) => {
+    setSetting("textScale", event.target.value);
+  });
+  elements.settingShowTags.addEventListener("change", (event) => {
+    setSetting("showTags", event.target.checked);
+  });
+  elements.settingGlow.addEventListener("change", (event) => {
+    setSetting("glow", event.target.checked);
+  });
+  elements.settingDensity.addEventListener("change", (event) => {
+    setSetting("uiDensity", event.target.value);
+  });
+  elements.settingCardRadius.addEventListener("change", (event) => {
+    setSetting("cardRadius", event.target.value);
+  });
   elements.settingReduceMotion.addEventListener("change", (event) => {
     setSetting("reduceMotion", event.target.checked);
   });
@@ -1366,6 +1460,13 @@ function attachBaseHandlers() {
     elements.playerProvider.value = settings.provider;
     elements.playerProvider.addEventListener("change", (event) => {
       setSetting("provider", event.target.value);
+      if (elements.playerFrame) {
+        if (event.target.value === "custom3") {
+          elements.playerFrame.removeAttribute("sandbox");
+        } else {
+          elements.playerFrame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
+        }
+      }
       if (currentPlayerItem) {
         const src = buildPlayerUrl(currentPlayerItem, {
           season: currentPlayerSeason,
