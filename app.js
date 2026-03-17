@@ -240,6 +240,21 @@ const elements = {
   detailPlay: document.getElementById("detailPlay"),
   detailContinue: document.getElementById("detailContinue"),
   detailList: document.getElementById("detailList"),
+  detailFullscreen: document.getElementById("detailFullscreen"),
+  detailFullpage: document.getElementById("detailFullpage"),
+  detailFullpageBack: document.getElementById("detailFullpageBack"),
+  detailHeroBackdrop: document.getElementById("detailHeroBackdrop"),
+  detailHeroTitle: document.getElementById("detailHeroTitle"),
+  detailHeroPlay: document.getElementById("detailHeroPlay"),
+  detailHeroList: document.getElementById("detailHeroList"),
+  detailHeroDownload: document.getElementById("detailHeroDownload"),
+  detailFullTitle: document.getElementById("detailFullTitle"),
+  detailFullMeta: document.getElementById("detailFullMeta"),
+  detailFullDesc: document.getElementById("detailFullDesc"),
+  detailFullStarring: document.getElementById("detailFullStarring"),
+  detailMoreGenres: document.getElementById("detailMoreGenres"),
+  detailMoreCast: document.getElementById("detailMoreCast"),
+  detailRecsGrid: document.getElementById("detailRecsGrid"),
   playerOverlay: document.getElementById("playerOverlay"),
   playerFrame: document.getElementById("playerFrame"),
   playerClose: document.getElementById("playerClose"),
@@ -249,6 +264,10 @@ const elements = {
   shuffleBtn: document.getElementById("shuffleBtn"),
   searchToggle: document.getElementById("searchToggle"),
   searchOverlay: document.getElementById("searchOverlay"),
+  mobileMenuBtn: document.getElementById("mobileMenuBtn"),
+  mobileMenuOverlay: document.getElementById("mobileMenuOverlay"),
+  mobileMenuClose: document.getElementById("mobileMenuClose"),
+  settingsNavMobile: document.getElementById("settingsNavMobile"),
   settingsNav: document.getElementById("settingsNav"),
   settingsOverlay: document.getElementById("settingsOverlay"),
   settingsClose: document.getElementById("settingsClose"),
@@ -301,9 +320,11 @@ const tmdbMeta = {
 
 const tvCache = new Map();
 const seasonCache = new Map();
+const creditsCache = new Map();
 
 let searchTimer = null;
 let searchRequestId = 0;
+let detailFullscreenActive = false;
 function buildKey(item, season = item.season, episode = item.episode) {
   if (item.type === "tv") {
     return `${item.tmdbId}:S${season}:E${episode}`;
@@ -342,6 +363,12 @@ function applySettings() {
   document.documentElement.style.setProperty("--accent-2", getAccent2(settings.accent));
   document.body.classList.toggle("compact-cards", settings.compactCards);
   document.body.classList.toggle("reduce-motion", settings.reduceMotion);
+}
+
+function setPlatformClass() {
+  const ua = navigator.userAgent || "";
+  const isAndroid = /Android/i.test(ua);
+  document.body.classList.toggle("android", isAndroid);
 }
 
 function syncSettingsUI() {
@@ -558,10 +585,109 @@ function setHero(item) {
   elements.heroList.onclick = () => toggleList(item);
 }
 
+function setDetailFullscreen(on) {
+  detailFullscreenActive = on;
+  if (elements.detailOverlay) {
+    elements.detailOverlay.classList.toggle("fullpage-open", on);
+  }
+  if (elements.detailFullpage) {
+    elements.detailFullpage.classList.toggle("hidden", !on);
+    elements.detailFullpage.setAttribute("aria-hidden", on ? "false" : "true");
+  }
+  if (elements.detailFullscreen) {
+    elements.detailFullscreen.setAttribute("aria-pressed", on ? "true" : "false");
+  }
+  if (on && elements.detailFullpage) {
+    elements.detailFullpage.scrollTop = 0;
+  }
+}
+
+async function loadCredits(item) {
+  const cacheKey = `${item.type}:${item.tmdbId}`;
+  if (creditsCache.has(cacheKey)) {
+    return creditsCache.get(cacheKey);
+  }
+  try {
+    const endpoint = item.type === "tv" ? `/tv/${item.tmdbId}/credits` : `/movie/${item.tmdbId}/credits`;
+    const credits = await fetchTmdb(endpoint, { language: settings.language });
+    creditsCache.set(cacheKey, credits);
+    return credits;
+  } catch (error) {
+    return null;
+  }
+}
+
+function getRecommendations(item) {
+  const tags = new Set(item.tags || []);
+  const pool = DATA.filter((entry) => entry.tmdbId !== item.tmdbId);
+  const scored = pool.map((entry) => {
+    const overlap = (entry.tags || []).filter((tag) => tags.has(tag)).length;
+    return { entry, score: overlap + (entry.type === item.type ? 0.5 : 0) };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored.filter((row) => row.score > 0).slice(0, 10).map((row) => row.entry);
+  if (top.length >= 8) return top.slice(0, 8);
+  const fallback = scored.map((row) => row.entry).slice(0, 12);
+  return [...new Set([...top, ...fallback])].slice(0, 8);
+}
+
+async function hydrateFullscreenDetail(item) {
+  if (elements.detailHeroBackdrop) {
+    elements.detailHeroBackdrop.style.backgroundImage = `url(${item.backdrop || item.poster || ""})`;
+  }
+  if (elements.detailHeroTitle) {
+    elements.detailHeroTitle.textContent = item.title;
+  }
+  if (elements.detailFullTitle) {
+    elements.detailFullTitle.textContent = item.title;
+  }
+  if (elements.detailFullMeta) {
+    elements.detailFullMeta.textContent = `${item.year} · ${item.type === "tv" ? "Series" : "Movie"} · ${item.duration || ""} · ${item.rating}`;
+  }
+  if (elements.detailFullDesc) {
+    elements.detailFullDesc.textContent = item.description;
+  }
+
+  if (elements.detailMoreGenres) {
+    const tags = (item.tags || []).map((tag) => tag.charAt(0).toUpperCase() + tag.slice(1)).join(", ");
+    elements.detailMoreGenres.innerHTML = `
+      <div class="detail-more-title">Genres</div>
+      <div class="detail-more-body">${tags || "Not available"}</div>
+      <div class="detail-more-title">About</div>
+      <div class="detail-more-body">${item.description.slice(0, 120)}${item.description.length > 120 ? "..." : ""}</div>
+    `;
+  }
+
+  if (elements.detailMoreCast || elements.detailFullStarring) {
+    const credits = await loadCredits(item);
+    const cast = credits?.cast?.slice(0, 8).map((person) => person.name).filter(Boolean) || [];
+    if (elements.detailFullStarring) {
+      elements.detailFullStarring.textContent = cast.length ? `Starring: ${cast.join(", ")}` : "";
+    }
+    if (elements.detailMoreCast) {
+      elements.detailMoreCast.innerHTML = `
+        <div class="detail-more-title">Cast</div>
+        <div class="detail-more-body">${cast.length ? cast.join(", ") : "Not available"}</div>
+      `;
+    }
+  }
+
+  if (elements.detailRecsGrid) {
+    elements.detailRecsGrid.innerHTML = "";
+    getRecommendations(item).forEach((entry) => {
+      elements.detailRecsGrid.appendChild(renderCard(entry));
+    });
+  }
+}
+
 async function openDetail(item) {
   activeItem = item;
   activeSeason = null;
   activeEpisode = null;
+
+  if (elements.searchOverlay && !elements.searchOverlay.classList.contains("hidden")) {
+    elements.searchOverlay.classList.add("hidden");
+  }
 
   elements.detailPoster.src = item.backdrop || item.poster || "";
   elements.detailTitle.textContent = item.title;
@@ -582,6 +708,21 @@ async function openDetail(item) {
 
   elements.detailContinue.onclick = () => openPlayer(item, { resume: true });
   elements.detailList.onclick = () => toggleList(item);
+  if (elements.detailHeroPlay) {
+    elements.detailHeroPlay.onclick = () => {
+      if (item.type === "tv" && activeSeason && activeEpisode) {
+        openPlayer(item, { season: activeSeason, episode: activeEpisode, resume: false });
+        return;
+      }
+      openPlayer(item, { resume: false });
+    };
+  }
+  if (elements.detailHeroList) {
+    elements.detailHeroList.onclick = () => toggleList(item);
+  }
+  if (elements.detailHeroDownload) {
+    elements.detailHeroDownload.disabled = true;
+  }
 
   if (item.type === "tv") {
     elements.detailSeries.classList.remove("hidden");
@@ -589,12 +730,15 @@ async function openDetail(item) {
   } else {
     elements.detailSeries.classList.add("hidden");
   }
+
+  hydrateFullscreenDetail(item);
 }
 
 function closeDetail() {
   elements.detailOverlay.classList.add("hidden");
   document.body.classList.remove("no-scroll");
   activeItem = null;
+  setDetailFullscreen(false);
 }
 
 function buildPlayerUrl(item, options = {}) {
@@ -1152,6 +1296,39 @@ function attachBaseHandlers() {
     event.preventDefault();
     openSettings();
   });
+  if (elements.settingsNavMobile) {
+    elements.settingsNavMobile.addEventListener("click", (event) => {
+      event.preventDefault();
+      openSettings();
+      if (elements.mobileMenuOverlay) {
+        elements.mobileMenuOverlay.classList.add("hidden");
+        elements.mobileMenuOverlay.setAttribute("aria-hidden", "true");
+      }
+    });
+  }
+
+  if (elements.mobileMenuBtn && elements.mobileMenuOverlay) {
+    elements.mobileMenuBtn.addEventListener("click", () => {
+      elements.mobileMenuOverlay.classList.remove("hidden");
+      elements.mobileMenuOverlay.setAttribute("aria-hidden", "false");
+    });
+  }
+
+  if (elements.mobileMenuClose && elements.mobileMenuOverlay) {
+    elements.mobileMenuClose.addEventListener("click", () => {
+      elements.mobileMenuOverlay.classList.add("hidden");
+      elements.mobileMenuOverlay.setAttribute("aria-hidden", "true");
+    });
+  }
+
+  if (elements.mobileMenuOverlay) {
+    elements.mobileMenuOverlay.addEventListener("click", (event) => {
+      if (event.target.classList.contains("mobile-menu-scrim")) {
+        elements.mobileMenuOverlay.classList.add("hidden");
+        elements.mobileMenuOverlay.setAttribute("aria-hidden", "true");
+      }
+    });
+  }
 
   elements.detailOverlay.addEventListener("click", (event) => {
     if (event.target.classList.contains("overlay-scrim")) {
@@ -1199,6 +1376,10 @@ function attachBaseHandlers() {
       document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("is-active"));
       link.classList.add("is-active");
       applyView(link.dataset.view);
+      if (elements.mobileMenuOverlay && !elements.mobileMenuOverlay.classList.contains("hidden")) {
+        elements.mobileMenuOverlay.classList.add("hidden");
+        elements.mobileMenuOverlay.setAttribute("aria-hidden", "true");
+      }
     });
   });
 
@@ -1213,6 +1394,17 @@ function attachBaseHandlers() {
         elements.searchOverlay.classList.add("hidden");
         document.body.classList.remove("no-scroll");
       }
+    });
+  }
+
+  if (elements.detailFullscreen) {
+    elements.detailFullscreen.addEventListener("click", () => {
+      setDetailFullscreen(!detailFullscreenActive);
+    });
+  }
+  if (elements.detailFullpageBack) {
+    elements.detailFullpageBack.addEventListener("click", () => {
+      setDetailFullscreen(false);
     });
   }
 
@@ -1237,6 +1429,10 @@ function attachBaseHandlers() {
       if (elements.searchOverlay) {
         elements.searchOverlay.classList.add("hidden");
         document.body.classList.remove("no-scroll");
+      }
+      if (elements.mobileMenuOverlay) {
+        elements.mobileMenuOverlay.classList.add("hidden");
+        elements.mobileMenuOverlay.setAttribute("aria-hidden", "true");
       }
     }
   });
@@ -1411,6 +1607,7 @@ function renderManageProfiles() {
 
 async function boot() {
   applySettings();
+  setPlatformClass();
   attachSettingsHandlers();
   attachBaseHandlers();
   attachProfileHandlers();
@@ -1437,10 +1634,14 @@ async function boot() {
   applyView("home");
 
   renderProfiles();
-  if (!activeProfileId) {
-    profileElements.overlay.classList.remove("hidden");
-  } else if (profileElements.avatar) {
+  if (profileElements.avatar) {
     profileElements.avatar.textContent = getProfileInitials();
+  }
+  if (profileElements.menu) {
+    profileElements.menu.classList.add("hidden");
+  }
+  if (profileElements.overlay) {
+    profileElements.overlay.classList.remove("hidden");
   }
 }
 

@@ -29,6 +29,9 @@
       <a id="settingsNav" class="nav-link" href="#">Settings</a>
     </nav>
     <div class="actions">
+      <button id="mobileMenuBtn" class="icon-btn mobile-only" aria-label="Open menu">
+        <span class="hamburger"></span>
+      </button>
       <button id="searchToggle" class="icon-btn" aria-label="Search">
         <img class="icon-img" src="https://i.ibb.co/Kj84X57R/image-removebg-preview.png" alt="Search" />
       </button>
@@ -36,6 +39,26 @@
       <div id="profileAvatar" class="avatar">G</div>
     </div>
   </header>
+
+  <div id="mobileMenuOverlay" class="mobile-menu hidden" aria-hidden="true">
+    <div class="mobile-menu-scrim"></div>
+    <div class="mobile-menu-panel">
+      <div class="mobile-menu-header">
+        <div class="brand-name">Beam</div>
+        <button id="mobileMenuClose" class="icon-btn" aria-label="Close menu">
+          <span class="close-x"></span>
+        </button>
+      </div>
+      <div class="mobile-menu-links">
+        <a class="nav-link" href="#" data-view="home">Home</a>
+        <a class="nav-link" href="#" data-view="series">Series</a>
+        <a class="nav-link" href="#" data-view="movies">Movies</a>
+        <a class="nav-link" href="#" data-view="collections">Collections</a>
+        <a class="nav-link" href="#" data-view="list">My List</a>
+        <a id="settingsNavMobile" class="nav-link" href="#">Settings</a>
+      </div>
+    </div>
+  </div>
 
   <div id="profileMenu" class="profile-menu hidden">
     <button id="switchProfileBtn" class="menu-item">Switch Profile</button>
@@ -236,6 +259,11 @@
         <button id="detailClose" class="ghost-btn">Back to Home</button>
         <div class="detail-actions">
           <button id="detailPlay" class="primary-btn">Play</button>
+          <button id="detailFullscreen" class="icon-btn" aria-label="Fullscreen view">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 3H3v4h2V5h2V3Zm12 0h-4v2h2v2h2V3ZM5 17H3v4h4v-2H5v-2Zm16 0h-2v2h-2v2h4v-4Z" fill="currentColor"/>
+            </svg>
+          </button>
           <button id="detailContinue" class="ghost-btn">Continue</button>
           <button id="detailList" class="ghost-btn">+ My List</button>
         </div>
@@ -262,6 +290,48 @@
             <div id="episodeList" class="episode-list"></div>
           </div>
         </div>
+      </div>
+    </div>
+    <div id="detailFullpage" class="detail-fullpage hidden" aria-hidden="true">
+      <div class="detail-fullpage-header">
+        <button id="detailFullpageBack" class="ghost-btn ios-back">Back</button>
+        <div class="detail-fullpage-tabs">
+          <button class="pill-tab is-active">Trailers</button>
+          <button class="pill-tab">More to watch</button>
+        </div>
+      </div>
+      <div class="detail-hero">
+        <div id="detailHeroBackdrop" class="detail-hero-backdrop"></div>
+        <div class="detail-hero-content">
+          <div id="detailHeroTitle" class="detail-hero-title"></div>
+          <div class="detail-hero-actions">
+            <button id="detailHeroPlay" class="primary-btn">Play</button>
+            <button id="detailHeroList" class="ghost-btn">+ My List</button>
+            <button id="detailHeroDownload" class="ghost-btn">Download</button>
+          </div>
+        </div>
+      </div>
+      <div class="detail-full-info">
+        <div class="detail-full-card">
+          <h3 id="detailFullTitle"></h3>
+          <div id="detailFullMeta" class="detail-full-meta"></div>
+          <p id="detailFullDesc" class="detail-full-desc"></p>
+          <div id="detailFullStarring" class="detail-full-starring"></div>
+        </div>
+      </div>
+      <div class="detail-more">
+        <div id="detailMoreGenres" class="detail-more-card"></div>
+        <div class="detail-more-card">
+          <div class="detail-more-title">Audio</div>
+          <div class="detail-more-body">Native</div>
+          <div class="detail-more-title">Subtitles</div>
+          <div class="detail-more-body">Default</div>
+        </div>
+        <div id="detailMoreCast" class="detail-more-card"></div>
+      </div>
+      <div class="detail-recs">
+        <div class="detail-recs-title">You Might Also Like</div>
+        <div id="detailRecsGrid" class="detail-recs-grid"></div>
       </div>
     </div>
   </div>
