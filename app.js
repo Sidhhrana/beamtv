@@ -220,6 +220,7 @@ const elements = {
   heroPlay: document.getElementById("heroPlay"),
   heroInfo: document.getElementById("heroInfo"),
   heroList: document.getElementById("heroList"),
+  heroBadge: document.getElementById("heroBadge"),
   continueRail: document.getElementById("continueRail"),
   listRail: document.getElementById("listRail"),
   railEssentials: document.getElementById("railEssentials"),
@@ -605,10 +606,30 @@ function renderContinueWatching() {
 }
 
 function renderMyList() {
+  if (currentView !== "list") {
+    elements.listRail.innerHTML = "";
+    return;
+  }
   const list = loadProfileStore(STORAGE_KEYS.list, []);
   elements.listRail.innerHTML = "";
   if (!list.length) {
-    elements.listRail.innerHTML = "<div class=\"muted\">No saved titles yet.</div>";
+    elements.listRail.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">≡</div>
+        <h3>Your list is empty</h3>
+        <button class="primary-btn" id="browseContentBtn">Browse Content</button>
+      </div>
+    `;
+    const browseBtn = document.getElementById("browseContentBtn");
+    if (browseBtn) {
+      browseBtn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("is-active"));
+        const homeLink = document.querySelector(".nav-link[data-view=\"home\"]");
+        homeLink?.classList.add("is-active");
+        applyView("home");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
     return;
   }
 
@@ -622,6 +643,7 @@ function renderMyList() {
 }
 
 function setHero(item) {
+  const nowYear = new Date().getFullYear();
   elements.heroTitle.textContent = item.title;
   elements.heroDesc.textContent = item.description;
   elements.heroYear.textContent = item.year;
@@ -634,6 +656,9 @@ function setHero(item) {
   if (elements.heroPoster) {
     elements.heroPoster.src = item.poster || "";
     elements.heroPoster.alt = item.title;
+  }
+  if (elements.heroBadge) {
+    elements.heroBadge.textContent = Number(item.year) >= nowYear ? "Coming Soon" : "Now Streaming";
   }
 
   elements.heroPlay.onclick = () => openPlayer(item, { resume: false });
@@ -819,11 +844,11 @@ function buildPlayerUrl(item, options = {}) {
       src = `${base}/watch/movie/${item.tmdbId}`;
     }
   } else if (settings.provider === "custom3") {
-    const base = "https://flixer.su";
+    const base = "https://tv.vynx.cc";
     if (item.type === "tv") {
-      src = `${base}/watch/tv/${item.tmdbId}/${options.season}/${options.episode}`;
+      src = `${base}/watch/${item.tmdbId}?type=tv&season=${options.season}&episode=${options.episode}&title=${encodeURIComponent(item.title)}`;
     } else {
-      src = `${base}/watch/movie/${item.tmdbId}`;
+      src = `${base}/watch/${item.tmdbId}?type=movie&title=${encodeURIComponent(item.title)}`;
     }
   } else if (item.type === "tv") {
     src = `https://www.vidking.net/embed/tv/${item.tmdbId}/${options.season}/${options.episode}?color=${accent}&autoPlay=${autoPlay}&nextEpisode=${nextEpisode}&episodeSelector=${episodeSelector}`;
@@ -873,13 +898,6 @@ function openPlayer(item, options = {}) {
   elements.playerFrame.src = src;
   elements.playerTitle.textContent = item.title;
   elements.playerSub.textContent = item.type === "tv" ? `Season ${season} - Episode ${episode}` : item.duration || "";
-  if (elements.playerFrame) {
-    if (settings.provider === "custom3") {
-      elements.playerFrame.removeAttribute("sandbox");
-    } else {
-      elements.playerFrame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
-    }
-  }
   elements.playerOverlay.classList.remove("hidden");
   elements.detailOverlay.classList.add("hidden");
   document.body.classList.add("no-scroll");
@@ -1351,7 +1369,7 @@ function applyView(view) {
 
   show("hero", isHome);
   show("continueSection", isHome);
-  show("listSection", isHome || isList);
+  show("listSection", isList);
   show("essentialsSection", isHome || isCollections);
   show("moviesSection", isHome || isMovies);
   show("seriesSection", isHome || isSeries);
@@ -1460,13 +1478,6 @@ function attachBaseHandlers() {
     elements.playerProvider.value = settings.provider;
     elements.playerProvider.addEventListener("change", (event) => {
       setSetting("provider", event.target.value);
-      if (elements.playerFrame) {
-        if (event.target.value === "custom3") {
-          elements.playerFrame.removeAttribute("sandbox");
-        } else {
-          elements.playerFrame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation");
-        }
-      }
       if (currentPlayerItem) {
         const src = buildPlayerUrl(currentPlayerItem, {
           season: currentPlayerSeason,
