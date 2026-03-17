@@ -268,6 +268,7 @@ const elements = {
   mobileMenuOverlay: document.getElementById("mobileMenuOverlay"),
   mobileMenuClose: document.getElementById("mobileMenuClose"),
   settingsNavMobile: document.getElementById("settingsNavMobile"),
+  settingsNavBottom: document.getElementById("settingsNavBottom"),
   settingsNav: document.getElementById("settingsNav"),
   settingsOverlay: document.getElementById("settingsOverlay"),
   settingsClose: document.getElementById("settingsClose"),
@@ -1304,6 +1305,12 @@ function attachBaseHandlers() {
         elements.mobileMenuOverlay.classList.add("hidden");
         elements.mobileMenuOverlay.setAttribute("aria-hidden", "true");
       }
+    });
+  }
+  if (elements.settingsNavBottom) {
+    elements.settingsNavBottom.addEventListener("click", (event) => {
+      event.preventDefault();
+      openSettings();
     });
   }
 
