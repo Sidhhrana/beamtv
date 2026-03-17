@@ -1,9 +1,9 @@
-const CACHE_NAME = "beam-cache-v3";
+const CACHE_NAME = "beam-cache-v4";
 const CORE_ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=20260316-2",
-  "./app.js?v=20260316-2",
+  "./styles.css?v=20260316-3",
+  "./app.js?v=20260316-3",
   "./manifest.webmanifest",
 ];
 

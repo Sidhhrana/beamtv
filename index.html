@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="https://i.ibb.co/Y4gscFwJ/image.png" />
-  <link rel="stylesheet" href="styles.css?v=20260316-2" />
+  <link rel="stylesheet" href="styles.css?v=20260316-3" />
 </head>
 <body>
   <div class="bg-sheen"></div>
@@ -274,7 +274,7 @@
   <footer class="footer">
     <div>Made by Sidhh with love and a lot of braincells 💕💕</div>
     <div class="muted">Contact: iamsidhh@gmail.com · CC BY-NC · © 2026 Beam</div>
-    <div class="muted">Version: 20260316-2</div>
+    <div class="muted">Version: 20260316-3</div>
   </footer>
 
   <div id="detailOverlay" class="overlay hidden" aria-hidden="true">
@@ -361,24 +361,23 @@
     </div>
   </div>
 
-  <div id="playerOverlay" class="overlay hidden" aria-hidden="true">
-    <div class="overlay-scrim"></div>
-    <div class="player-card">
-      <div class="player-top">
-        <button id="playerClose" class="ghost-btn">Back to Home</button>
-        <div class="player-meta">
-          <strong id="playerTitle"></strong>
-          <div id="playerSub" class="muted"></div>
-        </div>
-        <div class="player-controls">
-          <select id="playerProvider" class="select">
-            <option value="vidking">Vidking</option>
-            <option value="custom">XP</option>
-            <option value="custom2">67movies</option>
-            <option value="custom3">Flixer</option>
-          </select>
-        </div>
+  <div id="playerOverlay" class="player-page hidden" aria-hidden="true">
+    <div class="player-page-header">
+      <button id="playerClose" class="ghost-btn ios-back">Back</button>
+      <div class="player-meta">
+        <strong id="playerTitle"></strong>
+        <div id="playerSub" class="muted"></div>
       </div>
+      <div class="player-controls">
+        <select id="playerProvider" class="select">
+          <option value="vidking">Vidking</option>
+          <option value="custom">XP</option>
+          <option value="custom2">67movies</option>
+          <option value="custom3">Flixer</option>
+        </select>
+      </div>
+    </div>
+    <div class="player-page-body">
       <div class="player-frame">
         <iframe
           id="playerFrame"
@@ -637,6 +636,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260316-2"></script>
+  <script src="app.js?v=20260316-3"></script>
 </body>
 </html>

@@ -411,6 +411,8 @@ function applySettings() {
   document.documentElement.style.setProperty("--bg-2", theme.bg2);
   document.documentElement.style.setProperty("--glass", theme.glass);
   document.documentElement.style.setProperty("--glass-strong", theme.glassStrong);
+  document.documentElement.style.setProperty("--glass-highlight", "rgba(255, 255, 255, 0.08)");
+  document.documentElement.style.setProperty("--glass-shadow", "rgba(0, 0, 0, 0.35)");
 
   const scaleMap = { small: 0.95, normal: 1, large: 1.05 };
   document.documentElement.style.setProperty("--text-scale", scaleMap[settings.textScale] || 1);
