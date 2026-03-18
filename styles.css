@@ -1331,6 +1331,38 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.ios-next-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
+  color: #f6f7fb;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 9px 16px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(10, 20, 40, 0.35);
+  backdrop-filter: blur(14px) saturate(1.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ios-next-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(10, 20, 40, 0.4);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.ios-next-btn:active {
+  transform: translateY(0);
+}
+
+.ios-next-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
 .player-frame {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -2513,3 +2545,13 @@ main {
 .hero-actions {
   margin-top: 4px;
 }
+
+
+
+@media (max-width: 720px) {
+  .ios-next-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

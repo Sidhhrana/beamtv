@@ -268,6 +268,7 @@ const elements = {
   playerTitle: document.getElementById("playerTitle"),
   playerSub: document.getElementById("playerSub"),
   playerProvider: document.getElementById("playerProvider"),
+  playerNextEpisode: document.getElementById("playerNextEpisode"),
   shuffleBtn: document.getElementById("shuffleBtn"),
   searchToggle: document.getElementById("searchToggle"),
   searchOverlay: document.getElementById("searchOverlay"),
@@ -328,6 +329,7 @@ let currentPlayerItem = null;
 let currentPlayerSeason = null;
 let currentPlayerEpisode = null;
 let currentPlayerProgress = 0;
+let nextEpisodeRequestId = 0;
 let activeProfileId = loadStore(STORAGE_KEYS.activeProfile, null);
 
 const tmdbMeta = {
@@ -476,7 +478,7 @@ function renderTags(container, tags) {
   });
 }
 
-function renderCard(item, progressData) {
+function renderCard(item, progressData, options = {}) {
   const card = document.createElement("div");
   card.className = `card ${item.type === "tv" ? "card-series" : "card-movie"}`;
   card.dataset.key = item.key;
@@ -541,7 +543,8 @@ function renderCard(item, progressData) {
   card.appendChild(img);
   card.appendChild(body);
 
-  card.addEventListener("click", () => openDetail(item));
+  const onClick = options.onClick || (() => openDetail(item));
+  card.addEventListener("click", onClick);
   return card;
 }
 
@@ -564,6 +567,25 @@ function mergeData(items) {
   });
 }
 
+function buildFallbackItem(entry) {
+  const snapshot = entry.item || {};
+  return {
+    key: snapshot.key || `tmdb-${entry.tmdbId}`,
+    title: snapshot.title || "Unknown title",
+    type: snapshot.type || entry.mediaType || "movie",
+    tmdbId: entry.tmdbId,
+    season: snapshot.season,
+    episode: snapshot.episode,
+    year: snapshot.year || "",
+    rating: snapshot.rating || "N/A",
+    duration: snapshot.duration || "",
+    tags: snapshot.tags || [],
+    description: snapshot.description || "No overview available.",
+    poster: snapshot.poster || "",
+    backdrop: snapshot.backdrop || snapshot.poster || "",
+  };
+}
+
 function renderContinueWatching() {
   const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   const entries = Object.values(progressStore)
@@ -584,10 +606,16 @@ function renderContinueWatching() {
   }
 
   uniqueByTitle.forEach((entry) => {
-    const item = DATA.find((d) => d.tmdbId === entry.tmdbId);
+    let item = DATA.find((d) => d.tmdbId === entry.tmdbId);
+    let isFallback = false;
+    if (!item && entry.item) {
+      item = buildFallbackItem(entry);
+      mergeData([item]);
+      isFallback = true;
+    }
     if (!item) return;
     if (currentTypeFilter && item.type !== currentTypeFilter) return;
-    const card = renderCard(item, entry);
+    const card = renderCard(item, entry, isFallback ? { onClick: () => openPlayer(item, { resume: true }) } : {});
     const actions = document.createElement("div");
     actions.className = "card-actions";
     const removeBtn = document.createElement("button");
@@ -871,6 +899,32 @@ function getLatestProgress(item) {
   return entries.sort((a, b) => b.timestamp - a.timestamp)[0];
 }
 
+async function updateNextEpisodeButton() {
+  if (!elements.playerNextEpisode) return;
+  const isTv = currentPlayerItem && currentPlayerItem.type === "tv";
+  elements.playerNextEpisode.classList.toggle("hidden", !isTv);
+  if (!isTv) {
+    elements.playerNextEpisode.disabled = true;
+    elements.playerNextEpisode.setAttribute("aria-disabled", "true");
+    return;
+  }
+
+  elements.playerNextEpisode.disabled = true;
+  elements.playerNextEpisode.setAttribute("aria-disabled", "true");
+  const requestId = ++nextEpisodeRequestId;
+  const next = await getNextEpisode(currentPlayerItem, currentPlayerSeason, currentPlayerEpisode);
+  if (requestId !== nextEpisodeRequestId) return;
+  if (next) {
+    elements.playerNextEpisode.disabled = false;
+    elements.playerNextEpisode.setAttribute("aria-disabled", "false");
+    elements.playerNextEpisode.dataset.nextSeason = String(next.season);
+    elements.playerNextEpisode.dataset.nextEpisode = String(next.episode);
+  } else {
+    delete elements.playerNextEpisode.dataset.nextSeason;
+    delete elements.playerNextEpisode.dataset.nextEpisode;
+  }
+}
+
 function openPlayer(item, options = {}) {
   const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   let season = options.season || item.season || 1;
@@ -886,7 +940,12 @@ function openPlayer(item, options = {}) {
 
   const key = item.type === "tv" ? `${item.tmdbId}:S${season}:E${episode}` : item.tmdbId;
   const entry = progressStore[key] || latest;
-  if (options.resume && entry && entry.currentTime > 30 && entry.currentTime < entry.duration - 60) {
+  if (
+    options.resume &&
+    entry &&
+    entry.currentTime > 30 &&
+    (!entry.duration || entry.currentTime < entry.duration - 60)
+  ) {
     progress = Math.floor(entry.currentTime);
   }
 
@@ -903,6 +962,8 @@ function openPlayer(item, options = {}) {
   elements.playerOverlay.classList.remove("hidden");
   elements.detailOverlay.classList.add("hidden");
   document.body.classList.add("no-scroll");
+
+  updateNextEpisodeButton();
 }
 
 function closePlayer() {
@@ -910,6 +971,11 @@ function closePlayer() {
   elements.playerFrame.src = "";
   document.body.classList.remove("no-scroll");
   currentPlayerItem = null;
+  if (elements.playerNextEpisode) {
+    elements.playerNextEpisode.classList.add("hidden");
+    elements.playerNextEpisode.disabled = true;
+    elements.playerNextEpisode.setAttribute("aria-disabled", "true");
+  }
 }
 
 function toggleList(item) {
@@ -1214,6 +1280,39 @@ async function renderEpisodes(item, seasonNumber, preferredEpisode) {
   });
 }
 
+async function getSeasonDetail(item, seasonNumber) {
+  const cacheKey = `${item.tmdbId}-S${seasonNumber}`;
+  let seasonDetail = seasonCache.get(cacheKey);
+  if (!seasonDetail) {
+    seasonDetail = await fetchTmdb(`/tv/${item.tmdbId}/season/${seasonNumber}`, {
+      language: settings.language,
+    });
+    seasonCache.set(cacheKey, seasonDetail);
+  }
+  return seasonDetail;
+}
+
+async function getNextEpisode(item, seasonNumber, episodeNumber) {
+  if (!item || item.type !== "tv") return null;
+  try {
+    const seasonDetail = await getSeasonDetail(item, seasonNumber);
+    const episodes = seasonDetail?.episodes || [];
+    const nextInSeason = episodes.find((ep) => ep.episode_number === episodeNumber + 1);
+    if (nextInSeason) {
+      return { season: seasonNumber, episode: nextInSeason.episode_number };
+    }
+    const nextSeasonNumber = seasonNumber + 1;
+    const nextSeasonDetail = await getSeasonDetail(item, nextSeasonNumber);
+    const nextSeasonEpisodes = nextSeasonDetail?.episodes || [];
+    if (nextSeasonEpisodes.length) {
+      return { season: nextSeasonNumber, episode: nextSeasonEpisodes[0].episode_number || 1 };
+    }
+  } catch (error) {
+    return null;
+  }
+  return null;
+}
+
 function handlePlayerEvents(event) {
   if (event.origin !== "https://www.vidking.net") return;
   if (typeof event.data !== "string") return;
@@ -1232,18 +1331,40 @@ function handlePlayerEvents(event) {
 
   const progressStore = loadProfileStore(STORAGE_KEYS.progress, {});
   const key = data.mediaType === "tv" ? `${data.id}:S${data.season}:E${data.episode}` : `${data.id}`;
+  const prev = progressStore[key] || {};
+  const duration = data.duration || prev.duration || 0;
+  const currentTime = data.currentTime || prev.currentTime || 0;
+  const snapshot = currentPlayerItem
+    ? {
+        key: currentPlayerItem.key,
+        title: currentPlayerItem.title,
+        type: currentPlayerItem.type,
+        tmdbId: currentPlayerItem.tmdbId,
+        season: currentPlayerItem.season,
+        episode: currentPlayerItem.episode,
+        year: currentPlayerItem.year,
+        rating: currentPlayerItem.rating,
+        duration: currentPlayerItem.duration,
+        tags: currentPlayerItem.tags,
+        description: currentPlayerItem.description,
+        poster: currentPlayerItem.poster,
+        backdrop: currentPlayerItem.backdrop,
+      }
+    : prev.item || null;
+  const progressValue = duration
+    ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
+    : prev.progress || (currentTime ? 2 : 0);
 
   progressStore[key] = {
     tmdbId: `${data.id}`,
     mediaType: data.mediaType,
     season: data.season,
     episode: data.episode,
-    currentTime: data.currentTime,
-    duration: data.duration,
-    progress: data.duration
-      ? Math.min(100, Math.max(0, (data.currentTime / data.duration) * 100))
-      : 0,
+    currentTime,
+    duration,
+    progress: progressValue,
     timestamp: Date.now(),
+    item: snapshot,
   };
 
   saveProfileStore(STORAGE_KEYS.progress, progressStore);
@@ -1488,6 +1609,21 @@ function attachBaseHandlers() {
         });
         elements.playerFrame.src = src;
       }
+    });
+  }
+
+  if (elements.playerNextEpisode) {
+    elements.playerNextEpisode.addEventListener("click", async () => {
+      if (!currentPlayerItem || currentPlayerItem.type !== "tv") return;
+      let nextSeason = Number(elements.playerNextEpisode.dataset.nextSeason);
+      let nextEpisode = Number(elements.playerNextEpisode.dataset.nextEpisode);
+      if (!nextSeason || !nextEpisode) {
+        const next = await getNextEpisode(currentPlayerItem, currentPlayerSeason, currentPlayerEpisode);
+        if (!next) return;
+        nextSeason = next.season;
+        nextEpisode = next.episode;
+      }
+      openPlayer(currentPlayerItem, { season: nextSeason, episode: nextEpisode, resume: false });
     });
   }
 
