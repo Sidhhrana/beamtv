@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000" id="meta-theme-color">
+  <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192/0a84ff/ffffff?text=B">
+  <title>Beam - Watch Now</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Minimalist Apple-like Styles with Light/Dark Mode Variables -->
+  <style>
+    :root {
+      --system-bg: #000000;
+      --system-text: #ffffff;
+      --system-text-muted: #9ca3af;
+      --mesh-color-1: rgba(20, 20, 30, 1);
+      --mesh-color-2: rgba(15, 25, 40, 1);
+      --glass-bg: rgba(30, 30, 35, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --card-bg: #1c1c1e;
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --btn-primary-bg: #ffffff;
+      --btn-primary-text: #000000;
+      --btn-secondary-bg: rgba(255, 255, 255, 0.15);
+      --overlay-gradient: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+      --sheet-bg: #000000;
+    }
+
+    [data-theme='light'] {
+      --system-bg: #f5f5f7;
+      --system-text: #1d1d1f;
+      --system-text-muted: #6e6e73;
+      --mesh-color-1: rgba(200, 220, 255, 0.5);
+      --mesh-color-2: rgba(240, 200, 255, 0.3);
+      --glass-bg: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(0, 0, 0, 0.1);
+      --card-bg: #ffffff;
+      --input-bg: rgba(0, 0, 0, 0.05);
+      --btn-primary-bg: #1d1d1f;
+      --btn-primary-text: #ffffff;
+      --btn-secondary-bg: rgba(0, 0, 0, 0.08);
+      --overlay-gradient: linear-gradient(to top, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+      --sheet-bg: #ffffff;
+    }
+
+    body {
+      background-color: var(--system-bg);
+      color: var(--system-text);
+      margin: 0;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    /* Serene Background Mesh */
+    .bg-mesh {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background: radial-gradient(circle at 15% 50%, var(--mesh-color-1), transparent 50%),
+                  radial-gradient(circle at 85% 30%, var(--mesh-color-2), transparent 50%);
+      animation: meshPulse 15s ease-in-out infinite alternate;
+      transition: background 0.5s ease;
+    }
+
+    @keyframes meshPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* Apple Glassmorphism */
+    .apple-glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 0.5px solid var(--glass-border);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Inputs & Buttons */
+    .apple-input {
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--system-text);
+      transition: all 0.2s ease;
+    }
+    .apple-input:focus {
+      border-color: #0a84ff;
+      outline: none;
+    }
+    .apple-input::placeholder { color: var(--system-text-muted); }
+
+    .btn-primary {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .btn-primary:hover { transform: scale(1.02); opacity: 0.9; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      background: var(--btn-secondary-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: var(--system-text);
+      border-radius: 999px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover { transform: scale(1.02); opacity: 0.8; }
+
+    /* Card Hover Dynamics */
+    .apple-card {
+      background: var(--card-bg);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+      will-change: transform;
+    }
+    .apple-card:hover {
+      transform: scale(1.04) translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+    }
+    .apple-card-overlay {
+      background: var(--overlay-gradient);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .apple-card:hover .apple-card-overlay { opacity: 1; }
+
+    /* Dynamic Dock Navigation */
+    .dynamic-dock-wrapper {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+    }
+    .dynamic-dock {
+      background: var(--glass-bg);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: auto;
+    }
+    .dynamic-dock:hover { padding-left: 1rem; padding-right: 1rem; transform: scale(1.02); }
+
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .fade-enter { animation: fadeIn 0.4s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .sheet-bg-color { background-color: var(--sheet-bg); }
+    .text-color-main { color: var(--system-text); }
+    .text-color-muted { color: var(--system-text-muted); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+    import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client?deps=react@18.2.0';
+    import * as lucide from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0,react-dom@18.2.0';
+    
+    const { Play, Info, Plus, X, Search, Home, Tv, Film, Bookmark, User, ChevronLeft, ChevronRight, LogOut, Settings, Check, MonitorPlay, Moon, Sun, Shield, ShieldAlert } = lucide;
+
+    // --- FIREBASE INITIALIZATION ---
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, onSnapshot, query, deleteDoc, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPNZttReZ8s6ga5iNChr-cAUGNqbDUsBc",
+      authDomain: "beamtv-aed7a.firebaseapp.com",
+      projectId: "beamtv-aed7a",
+      storageBucket: "beamtv-aed7a.firebasestorage.app",
+      messagingSenderId: "357356929853",
+      appId: "1:357356929853:web:ae28b4bc613ee2f8427b54"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = 'beam-tv-ultimate';
+
+    // --- CONFIGURATION & API ---
+    const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjZGQ2OWYyZDE5NzgwMWI1ZjA4MDhhY2M4NTVkM2M2ZCIsIm5iZiI6MTc3MzY0MjA0Mi45ODcsInN1YiI6IjY5YjdhMTNhZWNhYzk5MDEwYzIxZGM3YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.giMqJk1Z5Vsr0WyxK4oazNOYz8BP251Wf6Lg_jbwtjM";
+    const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+    const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/";
+
+    // --- STREAMING AGGREGATORS (All Old + New + Hindi) ---
+    const SERVERS = [
+      { id: 'embedsu', name: 'EmbedSU (Best for Preview)', buildUrl: (id, type, s, e) => type === 'movie' ? `https://embed.su/embed/movie/${id}` : `https://embed.su/embed/tv/${id}/${s}/${e}` },
+      { id: 'vidsrc', name: 'VidSrc (Requires Download)', buildUrl: (id, type, s, e) => type === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${id}` : `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
+      { id: 'vidsrc-in', name: 'VidSrc IN (Hindi)', buildUrl: (id, type, s, e) => type === 'movie' ? `https://vidsrc.in/embed/movie?tmdb=${id}` : `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
+      { id: 'smashy', name: 'SmashyStream', buildUrl: (id, type, s, e) => type === 'movie' ? `https://embed.smashystream.com/playere.php?tmdb=${id}` : `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${s}&episode=${e}` },
+      { id: 'zoechip', name: 'Zoechip', buildUrl: (id, type, s, e, title) => {
+          const slug = (title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          return type === 'movie' ? `https://zoechip.click/movie/${slug}` : `https://zoechip.click/tvshow/${slug}`;
+        }
+      },
+      { id: 'superembed', name: 'SuperEmbed', buildUrl: (id, type, s, e) => type === 'movie' ? `https://multiembed.mov/?video_id=${id}&tmdb=1` : `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` },
+      { id: 'vidking', name: 'Vidking', buildUrl: (id, type, s, e) => type === 'movie' ? `https://www.vidking.net/embed/movie/${id}?autoPlay=true` : `https://www.vidking.net/embed/tv/${id}/${s}/${e}?autoPlay=true` },
+      { id: 'xp', name: 'XP', buildUrl: (id, type, s, e) => type === 'movie' ? `https://xk4l.mzt4pr8wlkxnv0qsha5g.website/watch/${id}` : `https://xk4l.mzt4pr8wlkxnv0qsha5g.website/watch/${id}/${s}/${e}` },
+      { id: '67movies', name: '67movies', buildUrl: (id, type, s, e) => type === 'movie' ? `https://67movies.net/watch/movie/${id}` : `https://67movies.net/watch/tv/${id}/${s}/${e}` },
+      { id: 'flixer', name: 'Flixer', buildUrl: (id, type, s, e) => type === 'movie' ? `https://tv.vynx.cc/watch/${id}?type=movie` : `https://tv.vynx.cc/watch/${id}?type=tv&season=${s}&episode=${e}` }
+    ];
+
+    const DEFAULT_SETTINGS = { provider: 'embedsu', theme: 'dark', strictMode: true };
+
+    const fetchTMDB = async (endpoint, params = {}) => {
+      const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      const response = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${TMDB_TOKEN}`, "Content-Type": "application/json;charset=utf-8" },
+      });
+      if (!response.ok) throw new Error('TMDB API Error');
+      return response.json();
+    };
+
+    // --- COMPONENTS ---
+
+    // 0. Clean Authentication Screen
+    const AuthScreen = () => {
+      const [isLogin, setIsLogin] = useState(true);
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [name, setName] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handleEmailAuth = async (e) => {
+        e.preventDefault();
+        setError(''); setLoading(true);
+        try {
+          if (isLogin) { await signInWithEmailAndPassword(auth, email, password); } 
+          else {
+            const userCred = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(userCred.user, { displayName: name });
+          }
+        } catch (err) { setError(err.message.replace('Firebase: ', '')); } 
+        finally { setLoading(false); }
+      };
+
+      const handleGuestAuth = async () => {
+        setError(''); setLoading(true);
+        try { await signInAnonymously(auth); } catch(err) { setError(err.message); } finally { setLoading(false); }
+      };
+
+      return (
+        <div className="fixed inset-0 flex items-center justify-center p-6 z-[100]">
+          <div className="bg-mesh" />
+          <div className="w-full max-w-md apple-glass rounded-[2rem] p-8 fade-enter shadow-2xl relative z-10">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-semibold tracking-tight text-color-main mb-2">Beam</h1>
+              <p className="text-color-muted text-sm">Sign in to sync your Up Next list.</p>
+            </div>
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              {!isLogin && <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required={!isLogin} className="w-full apple-input rounded-xl py-3 px-4" />}
+              <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full apple-input rounded-xl py-3 px-4" />
+              <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full apple-input rounded-xl py-3 px-4" />
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+              <button type="submit" disabled={loading} className="w-full py-3.5 btn-primary mt-6">{loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}</button>
+            </form>
+            <div className="mt-6 flex flex-col gap-3">
+              <button onClick={handleGuestAuth} disabled={loading} className="w-full py-3.5 btn-secondary">Continue as Guest</button>
+            </div>
+            <p className="text-center text-color-muted mt-8 text-sm">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+              <button onClick={() => setIsLogin(!isLogin)} className="text-color-main font-medium hover:underline">{isLogin ? "Sign Up" : "Sign In"}</button>
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // 1. Dynamic Dock Navigation (Mac/iOS Vibe)
+    const DynamicDock = ({ currentView, setView }) => {
+      const navItems = [
+        { id: 'home', icon: Home, label: 'Home' },
+        { id: 'movies', icon: Film, label: 'Movies' },
+        { id: 'search', icon: Search, label: 'Search' },
+        { id: 'series', icon: Tv, label: 'TV Shows' },
+        { id: 'list', icon: Bookmark, label: 'Up Next' },
+        { id: 'profile', icon: User, label: 'Settings' }
+      ];
+
+      return (
+        <div className="dynamic-dock-wrapper">
+          <nav className="dynamic-dock rounded-[2rem] px-4 py-3 flex items-center gap-2 md:gap-4">
+            {navItems.map(item => {
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setView(item.id)}
+                  className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all duration-300 group
+                    ${isActive ? 'bg-[rgba(10,132,255,0.15)] text-[#0a84ff]' : 'text-color-muted hover:bg-[rgba(150,150,150,0.1)] hover:text-color-main'}
+                  `}
+                >
+                  <item.icon size={22} className={`transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />
+                  {isActive && <div className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[#0a84ff]" />}
+                  
+                  {/* Tooltip for desktop */}
+                  <span className="absolute -top-10 px-3 py-1 bg-[rgba(0,0,0,0.8)] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hidden md:block pointer-events-none whitespace-nowrap backdrop-blur-md">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      );
+    };
+
+    // 2. Elegant Media Card
+    const MediaCard = ({ item, onClick, progress }) => {
+      const imageUrl = item.poster_path ? `${IMAGE_BASE_URL}w500${item.poster_path}` : 'https://via.placeholder.com/500x750/1c1c1e/ffffff?text=No+Image';
+      const title = item.title || item.name;
+
+      return (
+        <div onClick={() => onClick(item)} className="relative flex-none w-[140px] md:w-[200px] aspect-[2/3] rounded-xl overflow-hidden cursor-pointer apple-card">
+          <img src={imageUrl} alt={title} loading="lazy" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 apple-card-overlay flex flex-col justify-end p-4">
+            <h4 className="text-white font-medium text-sm leading-tight truncate">{title}</h4>
+          </div>
+          {progress && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[rgba(255,255,255,0.3)]">
+              <div className="h-full bg-[#0a84ff] rounded-r-full" style={{ width: `${progress}%` }} />
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // 3. Media Row
+    const MediaRow = ({ title, items, onCardClick, isContinueWatching = false }) => {
+      const rowRef = useRef(null);
+
+      const scroll = (direction) => {
+        if (rowRef.current) {
+          const { scrollLeft, clientWidth } = rowRef.current;
+          rowRef.current.scrollTo({ left: direction === 'left' ? scrollLeft - clientWidth + 100 : scrollLeft + clientWidth - 100, behavior: 'smooth' });
+        }
+      };
+      if (!items || items.length === 0) return null;
+
+      return (
+        <div className="mb-12 relative group">
+          <h3 className="text-xl md:text-2xl font-semibold text-color-main mb-4 px-6 md:px-12 tracking-tight">{title}</h3>
+          
+          <div className="absolute left-0 top-[40%] -translate-y-1/2 z-20 w-16 h-full flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex pointer-events-none">
+            <button onClick={() => scroll('left')} className="ml-2 w-10 h-10 apple-glass rounded-full flex items-center justify-center text-color-main pointer-events-auto hover:scale-110 transition-transform">
+              <ChevronLeft size={24} />
+            </button>
+          </div>
+
+          <div ref={rowRef} className="flex gap-4 md:gap-5 overflow-x-auto px-6 md:px-12 pb-8 hide-scrollbar snap-x">
+            {items.map(item => (
+              <div key={item.id} className="snap-start shrink-0">
+                <MediaCard item={item.itemData || item} onClick={onCardClick} progress={isContinueWatching ? item.progress : null} />
+              </div>
+            ))}
+          </div>
+
+          <div className="absolute right-0 top-[40%] -translate-y-1/2 z-20 w-16 h-full flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex pointer-events-none">
+            <button onClick={() => scroll('right')} className="mr-2 w-10 h-10 apple-glass rounded-full flex items-center justify-center text-color-main pointer-events-auto hover:scale-110 transition-transform">
+              <ChevronRight size={24} />
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // 4. Immersive Detail Sheet with Aesthetic Episode UI
+    const DetailSheet = ({ item, onClose, onPlay, userList, toggleList, progressData }) => {
+      const [sheetSeason, setSheetSeason] = useState(1);
+      const [tvDetails, setTvDetails] = useState(null);
+      const [episodes, setEpisodes] = useState([]);
+      const [loadingEps, setLoadingEps] = useState(false);
+      const [closing, setClosing] = useState(false);
+
+      const isMovie = item?.media_type === 'movie' || item?.title;
+      
+      // Smart Initialization
+      useEffect(() => {
+        if (progressData && progressData.season) setSheetSeason(progressData.season);
+        
+        if (item && !isMovie) {
+          // Fetch overall TV Details (for season count)
+          fetchTMDB(`/tv/${item.id}`).then(data => setTvDetails(data)).catch(err => console.error(err));
+        }
+      }, [item, progressData, isMovie]);
+
+      // Fetch Episodes when Season Changes
+      useEffect(() => {
+        if (item && !isMovie && sheetSeason) {
+          setLoadingEps(true);
+          fetchTMDB(`/tv/${item.id}/season/${sheetSeason}`)
+            .then(data => { setEpisodes(data.episodes || []); setLoadingEps(false); })
+            .catch(err => { console.error(err); setLoadingEps(false); });
+        }
+      }, [item, sheetSeason, isMovie]);
+
+      if (!item) return null;
+
+      const title = item.title || item.name;
+      const releaseDate = item.release_date || item.first_air_date;
+      const year = releaseDate ? releaseDate.split('-')[0] : '';
+      const backdropUrl = item.backdrop_path ? `${IMAGE_BASE_URL}original${item.backdrop_path}` : null;
+      const inList = userList.includes(item.id.toString());
+      const seasonCount = tvDetails?.number_of_seasons || 1;
+
+      const handleClose = () => { setClosing(true); setTimeout(onClose, 300); };
+
+      return (
+        <div className={`fixed inset-0 z-[60] flex flex-col justify-end bg-[rgba(0,0,0,0.6)] backdrop-blur-md transition-opacity duration-300 ${closing ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="absolute inset-0 cursor-pointer" onClick={handleClose} />
+          
+          <div className={`relative w-full h-[90vh] md:h-[85vh] sheet-bg-color rounded-t-[2rem] overflow-hidden shadow-[0_-10px_40px_rgba(0,0,0,0.2)] flex flex-col transition-transform duration-300 ${closing ? 'translate-y-full' : 'translate-y-0'}`}>
+            
+            {/* Dynamic Header Image */}
+            <div className="absolute top-0 left-0 w-full h-[40vh] md:h-[50vh] opacity-30 md:opacity-50 pointer-events-none">
+              {backdropUrl && <img src={backdropUrl} alt="" className="w-full h-full object-cover mask-image-gradient" style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }} />}
+            </div>
+
+            <button onClick={handleClose} className="absolute top-6 right-6 w-10 h-10 apple-glass rounded-full flex items-center justify-center text-color-main hover:scale-110 transition-transform z-20">
+              <X size={20} />
+            </button>
+
+            <div className="relative z-10 px-6 md:px-16 pt-12 md:pt-24 flex-1 overflow-y-auto hide-scrollbar pb-32">
+              <div className="max-w-4xl">
+                <h2 className="text-4xl md:text-6xl font-bold text-color-main mb-4 tracking-tight leading-tight drop-shadow-md">{title}</h2>
+                
+                <div className="flex items-center gap-3 text-sm font-medium text-color-muted mb-8">
+                  {year && <span>{year}</span>}
+                  <span>•</span>
+                  <span>{isMovie ? 'Movie' : (tvDetails?.status || 'TV Show')}</span>
+                  {item.vote_average && (
+                    <>
+                      <span>•</span>
+                      <span className="flex items-center gap-1 text-[#0a84ff]">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                        {item.vote_average.toFixed(1)}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-4 mb-10">
+                  {isMovie ? (
+                    <button onClick={() => onPlay(item, null, null, title)} className="flex items-center gap-2 px-8 py-3.5 btn-primary text-lg shadow-lg">
+                      <Play fill="currentColor" size={20} /> Play Movie
+                    </button>
+                  ) : (
+                    progressData && progressData.progress > 0 && (
+                      <button onClick={() => onPlay(item, progressData.season, progressData.episode, title)} className="flex items-center gap-2 px-8 py-3.5 btn-primary text-lg shadow-lg">
+                        <Play fill="currentColor" size={20} /> Resume S{progressData.season} E{progressData.episode}
+                      </button>
+                    )
+                  )}
+                  <button onClick={() => toggleList(item)} className="flex items-center gap-2 px-6 py-3.5 btn-secondary text-lg">
+                    {inList ? <Check size={20} /> : <Plus size={20} />} {inList ? 'In Up Next' : 'Add'}
+                  </button>
+                </div>
+
+                <p className="text-color-main text-lg leading-relaxed mb-12 max-w-3xl opacity-90">{item.overview}</p>
+
+                {/* Aesthetic Episode Selection */}
+                {!isMovie && (
+                  <div className="mb-12">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-semibold text-color-main">Episodes</h3>
+                      <select value={sheetSeason} onChange={(e) => setSheetSeason(Number(e.target.value))} className="apple-glass text-color-main rounded-xl px-4 py-2 outline-none cursor-pointer font-medium appearance-none pr-8 relative">
+                        {[...Array(seasonCount)].map((_, i) => <option key={i+1} value={i+1} className="bg-[var(--card-bg)]">Season {i+1}</option>)}
+                      </select>
+                    </div>
+
+                    {loadingEps ? (
+                      <div className="flex gap-4 overflow-hidden py-2"><div className="w-64 h-36 apple-glass rounded-2xl animate-pulse"></div><div className="w-64 h-36 apple-glass rounded-2xl animate-pulse"></div></div>
+                    ) : (
+                      <div className="flex overflow-x-auto gap-5 pb-8 hide-scrollbar snap-x">
+                        {episodes.map((ep, idx) => {
+                          const epImage = ep.still_path ? `${IMAGE_BASE_URL}w300${ep.still_path}` : 'https://via.placeholder.com/300x170/1c1c1e/ffffff?text=Episode';
+                          return (
+                            <div key={ep.id} onClick={() => onPlay(item, sheetSeason, ep.episode_number, title)} className="w-64 md:w-72 shrink-0 snap-start apple-card rounded-2xl p-3 cursor-pointer flex flex-col justify-between group">
+                              <div>
+                                <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-3">
+                                  <img src={epImage} alt={ep.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Play fill="white" size={20} className="text-white ml-1" />
+                                    </div>
+                                  </div>
+                                </div>
+                                <h5 className="text-color-main font-semibold text-sm leading-tight mb-1">{ep.episode_number}. {ep.name}</h5>
+                                <p className="text-color-muted text-xs line-clamp-2 leading-relaxed">{ep.overview || "No description available."}</p>
+                              </div>
+                              {ep.runtime && <span className="text-xs text-color-muted mt-3 font-medium">{ep.runtime} min</span>}
+                            </div>
+                          );
+                        })}
+                        {episodes.length === 0 && <p className="text-color-muted">No episodes found for this season.</p>}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // 5. Clean Video Player
+    const PlayerModal = ({ item, initSeason, initEpisode, itemTitle, onClose, globalSettings, saveProgress }) => {
+      const [loading, setLoading] = useState(true);
+      const [activeServer, setActiveServer] = useState(globalSettings.provider);
+      
+      const isMovie = item.media_type === 'movie' || item.title;
+      const season = initSeason || 1;
+      const episode = initEpisode || 1;
+      const [controlsVisible, setControlsVisible] = useState(true);
+      const timeoutRef = useRef(null);
+
+      const serverDef = SERVERS.find(s => s.id === activeServer) || SERVERS[0];
+      const videoUrl = serverDef.buildUrl(item.id, isMovie ? 'movie' : 'tv', season, episode, itemTitle);
+
+      useEffect(() => { setLoading(true); }, [videoUrl]);
+      
+      useEffect(() => {
+        const timer = setTimeout(() => saveProgress(item, Math.floor(Math.random() * 80) + 10, season, episode), 15000);
+        return () => clearTimeout(timer);
+      }, [item, saveProgress, season, episode]);
+
+      const handleMouseMove = () => {
+        setControlsVisible(true);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => setControlsVisible(false), 3500);
+      };
+
+      return (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col fade-enter" onMouseMove={handleMouseMove} onTouchStart={handleMouseMove}>
+          <div className={`absolute top-0 left-0 w-full p-6 pt-12 md:pt-6 flex justify-between items-start z-20 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-500 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="flex items-center gap-4">
+              <button onClick={onClose} className="w-10 h-10 bg-[rgba(255,255,255,0.15)] backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[rgba(255,255,255,0.25)] transition-colors">
+                <ChevronLeft size={24} />
+              </button>
+              <div>
+                <h3 className="text-white font-semibold text-lg md:text-xl tracking-tight drop-shadow-md">{itemTitle || item.name}</h3>
+                {!isMovie && <span className="text-gray-300 text-sm font-medium">Season {season} • Episode {episode}</span>}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-[rgba(0,0,0,0.5)] backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2 text-sm border border-[rgba(255,255,255,0.1)]">
+                <MonitorPlay size={16} className="text-gray-400" />
+                <select value={activeServer} onChange={(e) => setActiveServer(e.target.value)} className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none">
+                  {SERVERS.map(s => <option key={s.id} value={s.id} className="bg-[#1c1c1e] text-white">{s.name}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 relative w-full h-full bg-black">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-black">
+                <div className="w-10 h-10 border-2 border-[rgba(255,255,255,0.2)] border-t-white rounded-full animate-spin" />
+              </div>
+            )}
+            {!globalSettings.strictMode && (
+              <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[rgba(255,59,48,0.9)] text-white px-4 py-2 rounded-xl text-xs font-semibold z-10 flex items-center gap-2 shadow-lg animate-pulse whitespace-nowrap">
+                <ShieldAlert size={16} /> Sandbox Off. Use Adblocker.
+              </div>
+            )}
+            
+            {globalSettings.strictMode ? (
+              <iframe src={videoUrl} className="w-full h-full border-none" allowFullScreen onLoad={() => setLoading(false)} sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" title="Video Player" />
+            ) : (
+              <iframe src={videoUrl} className="w-full h-full border-none" allowFullScreen onLoad={() => setLoading(false)} allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" title="Video Player" />
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // --- MAIN APP ENTRY ---
+    function App() {
+      const [appState, setAppState] = useState('loading'); 
+      const [user, setUser] = useState(null);
+      const [view, setView] = useState('home');
+      const [searchQuery, setSearchQuery] = useState('');
+      
+      const [settings, setSettings] = useState(() => {
+        const saved = localStorage.getItem('beam_settings');
+        return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+      });
+
+      // Apply Theme on load and change
+      useEffect(() => {
+        localStorage.setItem('beam_settings', JSON.stringify(settings));
+        document.body.setAttribute('data-theme', settings.theme);
+        
+        // Update PWA theme color meta tag
+        const metaThemeColor = document.getElementById('meta-theme-color');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', settings.theme === 'light' ? '#f5f5f7' : '#000000');
+        }
+      }, [settings]);
+
+      const updateSetting = (key, val) => setSettings(prev => ({ ...prev, [key]: val }));
+
+      const [trending, setTrending] = useState([]);
+      const [movies, setMovies] = useState([]);
+      const [series, setSeries] = useState([]);
+      const [searchResults, setSearchResults] = useState([]);
+      
+      const [continueWatching, setContinueWatching] = useState([]);
+      const [userList, setUserList] = useState([]);
+      
+      const [selectedItem, setSelectedItem] = useState(null);
+      const [playingItem, setPlayingItem] = useState(null);
+      const [playSeason, setPlaySeason] = useState(1);
+      const [playEpisode, setPlayEpisode] = useState(1);
+      const [playTitle, setPlayTitle] = useState('');
+
+      useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+          setUser(currentUser);
+          if (currentUser) {
+            if (appState === 'loading' || appState === 'auth') setAppState('main');
+          } else {
+            setAppState('auth');
+          }
+        });
+        return () => unsubscribe();
+      }, [appState]);
+
+      useEffect(() => {
+        if (!user) return;
+        const cwQuery = query(collection(db, 'artifacts', appId, 'users', user.uid, 'continue_watching'));
+        const unsubCW = onSnapshot(cwQuery, (snapshot) => {
+            const items = [];
+            snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+            items.sort((a, b) => b.updatedAt - a.updatedAt);
+            setContinueWatching(items);
+          }, (error) => console.error(error));
+
+        const listQuery = query(collection(db, 'artifacts', appId, 'users', user.uid, 'my_list'));
+        const unsubList = onSnapshot(listQuery, (snapshot) => {
+            const ids = [];
+            snapshot.forEach(doc => ids.push(doc.id));
+            setUserList(ids);
+          }, (error) => console.error(error));
+
+        return () => { unsubCW(); unsubList(); };
+      }, [user]);
+
+      useEffect(() => {
+        const loadContent = async () => {
+          try {
+            const [trendData, movieData, tvData] = await Promise.all([
+              fetchTMDB('/trending/all/day'), fetchTMDB('/movie/popular'), fetchTMDB('/tv/popular')
+            ]);
+            setTrending(trendData.results.slice(0, 15));
+            setMovies(movieData.results.slice(0, 15));
+            setSeries(tvData.results.slice(0, 15));
+          } catch (err) { console.error(err); }
+        };
+        loadContent();
+      }, []);
+
+      useEffect(() => {
+        if (searchQuery.trim().length < 2) { setSearchResults([]); return; }
+        const delay = setTimeout(async () => {
+          const data = await fetchTMDB('/search/multi', { query: searchQuery });
+          setSearchResults(data.results.filter(i => i.media_type === 'movie' || i.media_type === 'tv'));
+        }, 500);
+        return () => clearTimeout(delay);
+      }, [searchQuery]);
+
+      const saveProgress = async (item, progressPercent, s, e) => {
+        if (!user) return;
+        try { 
+          await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'continue_watching', item.id.toString()), { 
+            itemData: item, progress: progressPercent, season: s, episode: e, updatedAt: Date.now() 
+          }); 
+        } 
+        catch (err) { console.error(err); }
+      };
+
+      const toggleList = async (item) => {
+        if (!user) return;
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'my_list', item.id.toString());
+          userList.includes(item.id.toString()) ? await deleteDoc(docRef) : await setDoc(docRef, { itemData: item, addedAt: Date.now() });
+        } catch (err) { console.error(err); }
+      };
+
+      const handlePlay = (item, s = 1, e = 1, title = '') => {
+        setSelectedItem(null);
+        setPlaySeason(s);
+        setPlayEpisode(e);
+        setPlayTitle(title);
+        setPlayingItem(item);
+      };
+
+      if (appState === 'loading') {
+        return <div className="fixed inset-0 bg-black flex items-center justify-center"><div className="w-8 h-8 border-2 border-[rgba(255,255,255,0.2)] border-t-white rounded-full animate-spin" /></div>;
+      }
+
+      if (appState === 'auth') return <AuthScreen />;
+
+      const renderContent = () => {
+        switch (view) {
+          case 'search':
+            return (
+              <div className="pt-16 px-6 md:px-12 pb-32 fade-enter max-w-[1400px] mx-auto min-h-screen">
+                <div className="relative mb-12">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-color-muted" size={24} />
+                  <input type="text" placeholder="Movies, TV Shows, and more" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full apple-input rounded-[2rem] py-5 pl-14 pr-6 text-xl font-medium shadow-sm" autoFocus />
+                </div>
+                {searchQuery && searchResults.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                    {searchResults.map(item => <MediaCard key={item.id} item={item} onClick={setSelectedItem} />)}
+                  </div>
+                )}
+              </div>
+            );
+          case 'list':
+            const listItems = userList.map(id => [...trending, ...movies, ...series, ...continueWatching.map(c => c.itemData)].find(i => i.id.toString() === id)).filter(Boolean);
+            return (
+              <div className="pt-16 px-6 md:px-12 pb-32 fade-enter max-w-[1400px] mx-auto min-h-screen">
+                <h2 className="text-4xl font-bold text-color-main mb-10 tracking-tight">Up Next</h2>
+                {listItems.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                    {listItems.map((item, i) => <MediaCard key={i} item={item} onClick={setSelectedItem} />)}
+                  </div>
+                ) : (
+                  <div className="text-center mt-32 p-12">
+                    <Bookmark size={56} className="mx-auto mb-4 text-color-muted opacity-50" />
+                    <h3 className="text-2xl text-color-main font-semibold mb-2 tracking-tight">Your list is empty</h3>
+                    <p className="text-color-muted">Add shows and movies to keep track of what you want to watch.</p>
+                  </div>
+                )}
+              </div>
+            );
+          case 'profile':
+            return (
+              <div className="pt-16 px-6 md:px-12 pb-32 max-w-3xl mx-auto fade-enter min-h-screen">
+                <h2 className="text-4xl font-bold text-color-main mb-10 tracking-tight">Settings</h2>
+                
+                <div className="space-y-6">
+                  {/* Appearance Toggle */}
+                  <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
+                    <div>
+                      <h3 className="text-xl font-semibold text-color-main mb-1">Appearance</h3>
+                      <p className="text-sm text-color-muted">Toggle between Light and Dark mode.</p>
+                    </div>
+                    <button onClick={() => updateSetting('theme', settings.theme === 'dark' ? 'light' : 'dark')} className="w-14 h-14 rounded-full apple-glass flex items-center justify-center text-color-main hover:scale-105 transition-transform">
+                      {settings.theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+                    </button>
+                  </div>
+
+                  <div className="apple-glass rounded-[2rem] p-6 sm:p-8 shadow-sm">
+                    <h3 className="text-xl font-semibold text-color-main mb-2">Playback Source</h3>
+                    <p className="text-sm text-color-muted mb-6">Select your preferred streaming aggregator. (VidLink recommended for Hindi content).</p>
+                    <div className="relative">
+                      <select value={settings.provider} onChange={(e) => updateSetting('provider', e.target.value)} className="w-full apple-input rounded-xl px-4 py-4 outline-none cursor-pointer font-medium appearance-none">
+                        {SERVERS.map(s => <option key={s.id} value={s.id} className="bg-[var(--card-bg)] text-color-main">{s.name}</option>)}
+                      </select>
+                      <ChevronRight size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-color-muted pointer-events-none rotate-90" />
+                    </div>
+                  </div>
+
+                  <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
+                    <div className="pr-4">
+                      <h3 className="text-xl font-semibold text-color-main mb-1">Security Sandbox</h3>
+                      <p className="text-sm text-color-muted">Blocks malicious popups from servers. Disable only if videos fail to load.</p>
+                    </div>
+                    <button onClick={() => updateSetting('strictMode', !settings.strictMode)} className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 ${settings.strictMode ? 'bg-[#34c759]' : 'bg-[rgba(255,255,255,0.2)]'}`}>
+                      <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${settings.strictMode ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+
+                  <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+                    <div>
+                      <h3 className="text-xl font-semibold text-color-main mb-1">Account</h3>
+                      <p className="text-sm text-color-muted font-medium">{user?.email || 'Guest User'}</p>
+                    </div>
+                    <button onClick={() => signOut(auth)} className="px-8 py-3.5 bg-[rgba(255,59,48,0.1)] text-[#ff3b30] rounded-full font-semibold hover:bg-[rgba(255,59,48,0.2)] transition-colors whitespace-nowrap">
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          case 'home':
+          case 'movies':
+          case 'series':
+          default:
+            const heroData = view === 'movies' ? movies : view === 'series' ? series : trending;
+            const heroItem = heroData[0];
+            
+            return (
+              <div className="pb-32 fade-enter">
+                {heroItem && (
+                  <div className="relative w-full h-[65vh] md:h-[80vh] mb-12 overflow-hidden">
+                    <img src={`${IMAGE_BASE_URL}original${heroItem.backdrop_path}`} alt="Hero" className="absolute inset-0 w-full h-full object-cover mask-image-gradient" style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--system-bg)] via-transparent to-transparent" />
+                    
+                    <div className="absolute bottom-[10%] left-6 md:left-12 max-w-2xl z-10">
+                      <h1 className="text-5xl md:text-7xl font-bold text-color-main mb-4 tracking-tight leading-tight drop-shadow-md">
+                        {heroItem.title || heroItem.name}
+                      </h1>
+                      <p className="text-color-main text-lg md:text-xl line-clamp-3 mb-8 font-medium drop-shadow-sm opacity-90">
+                        {heroItem.overview}
+                      </p>
+                      <div className="flex flex-wrap gap-4">
+                        <button onClick={() => handlePlay(heroItem, 1, 1, heroItem.title || heroItem.name)} className="flex items-center gap-2 px-8 py-3.5 btn-primary text-lg shadow-lg">
+                          <Play fill="currentColor" size={20} /> Play
+                        </button>
+                        <button onClick={() => setSelectedItem(heroItem)} className="flex items-center gap-2 px-8 py-3.5 btn-secondary text-lg">
+                          <Info size={20} /> Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="relative z-20 max-w-[1600px] mx-auto">
+                  {continueWatching.length > 0 && <MediaRow title="Continue Watching" items={continueWatching} onCardClick={setSelectedItem} isContinueWatching={true} />}
+                  <MediaRow title={view === 'movies' ? 'Popular Movies' : view === 'series' ? 'Popular TV Shows' : 'Trending Now'} items={heroData.slice(1)} onCardClick={setSelectedItem} />
+                  <MediaRow title="Highly Rated" items={view === 'movies' ? trending.filter(i=>i.media_type==='movie') : view === 'series' ? trending.filter(i=>i.media_type==='tv') : movies} onCardClick={setSelectedItem} />
+                </div>
+              </div>
+            );
+        }
+      };
+
+      const getProgressData = (item) => {
+        if(!item) return null;
+        const cwItem = continueWatching.find(c => c.id === item.id.toString());
+        return cwItem ? { progress: cwItem.progress, season: cwItem.season, episode: cwItem.episode } : null;
+      };
+
+      return (
+        <div className="min-h-screen relative pb-20">
+          <div className="bg-mesh" />
+          
+          <main className="relative z-10">{renderContent()}</main>
+          
+          <DynamicDock currentView={view} setView={setView} />
+
+          {selectedItem && <DetailSheet item={selectedItem} onClose={() => setSelectedItem(null)} onPlay={handlePlay} userList={userList} toggleList={toggleList} progressData={getProgressData(selectedItem)} />}
+          {playingItem && <PlayerModal item={playingItem} initSeason={playSeason} initEpisode={playEpisode} itemTitle={playTitle} onClose={() => setPlayingItem(null)} globalSettings={settings} saveProgress={saveProgress} />}
+        </div>
+      );
+    }
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
