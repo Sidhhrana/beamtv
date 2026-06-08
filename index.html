@@ -217,6 +217,13 @@
         }
       },
       { id: 'superembed', name: 'SuperEmbed', buildUrl: (id, type, s, e) => type === 'movie' ? `https://multiembed.mov/?video_id=${id}&tmdb=1` : `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` },
+      { id: '123moviehd', name: '123MovieHD (Bollywood)', buildUrl: (id, type, s, e, title) => {
+          const slug = (title || 'watch').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          return type === 'movie' 
+            ? `https://123moviehd.in/movies/${slug}-${id}` 
+            : `https://123moviehd.in/tv-shows/${slug}-${id}/season/${s}/episode/${e}`;
+        }
+      },
       { id: 'vidking', name: 'Vidking', buildUrl: (id, type, s, e) => type === 'movie' ? `https://www.vidking.net/embed/movie/${id}?autoPlay=true` : `https://www.vidking.net/embed/tv/${id}/${s}/${e}?autoPlay=true` },
       { id: 'xp', name: 'XP', buildUrl: (id, type, s, e) => type === 'movie' ? `https://xk4l.mzt4pr8wlkxnv0qsha5g.website/watch/${id}` : `https://xk4l.mzt4pr8wlkxnv0qsha5g.website/watch/${id}/${s}/${e}` },
       { id: '67movies', name: '67movies', buildUrl: (id, type, s, e) => type === 'movie' ? `https://67movies.net/watch/movie/${id}` : `https://67movies.net/watch/tv/${id}/${s}/${e}` },
