@@ -179,7 +179,7 @@
     import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client?deps=react@18.2.0';
     import * as lucide from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0,react-dom@18.2.0';
     
-    const { Play, Info, Plus, X, Search, Home, Tv, Film, Bookmark, User, ChevronLeft, ChevronRight, LogOut, Settings, Check, MonitorPlay, Moon, Sun, Shield, ShieldAlert } = lucide;
+    const { Play, Info, Plus, X, Search, Home, Tv, Film, Bookmark, User, ChevronLeft, ChevronRight, LogOut, Settings, Check, MonitorPlay, Moon, Sun, Shield, ShieldAlert, Eye, EyeOff } = lucide;
 
     // --- FIREBASE INITIALIZATION ---
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
@@ -541,6 +541,7 @@
       const [loading, setLoading] = useState(true);
       const [activeServer, setActiveServer] = useState(globalSettings.provider);
       const [strictMode, setStrictMode] = useState(globalSettings.strictMode);
+      const [uiRemoved, setUiRemoved] = useState(false); // Persistent toggle state to remove all overlay UIs
       
       const isMovie = item.media_type === 'movie' || item.title;
       
@@ -606,41 +607,52 @@
       return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col fade-enter" onMouseMove={handleMouseMove} onTouchStart={handleMouseMove}>
           
-          {/* Top Bar Navigation HUD */}
-          <div className={`absolute top-0 left-0 w-full p-6 pt-12 md:pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-20 bg-gradient-to-b from-black/95 via-black/60 to-transparent transition-opacity duration-500 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="flex items-center gap-4">
-              <button onClick={onClose} className="w-10 h-10 bg-[rgba(255,255,255,0.15)] backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[rgba(255,255,255,0.25)] transition-colors">
-                <ChevronLeft size={24} />
-              </button>
-              <div>
-                <h3 className="text-white font-semibold text-lg md:text-xl tracking-tight drop-shadow-md">{itemTitle || item.name}</h3>
-                {!isMovie && <span className="text-gray-300 text-sm font-medium">Season {currentSeason} • Episode {currentEpisode}</span>}
+          {/* Ever-present Circular Toggle Button (Always stays visible to let you show/hide UI easily) */}
+          <button 
+            onClick={() => setUiRemoved(!uiRemoved)} 
+            className="absolute left-6 top-32 md:top-24 w-10 h-10 bg-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.38)] active:scale-95 text-white backdrop-blur-md rounded-full flex items-center justify-center transition-all z-[110] border border-[rgba(255,255,255,0.15)] shadow-lg"
+            title={uiRemoved ? "Show UI Overlays" : "Completely Unmount UI Overlays"}
+          >
+            {uiRemoved ? <Eye size={18} /> : <EyeOff size={18} />}
+          </button>
+
+          {/* Top Bar Navigation HUD - Unmounted entirely when uiRemoved is true */}
+          {!uiRemoved && (
+            <div className={`absolute top-0 left-0 w-full p-6 pt-12 md:pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-20 bg-gradient-to-b from-black/95 via-black/60 to-transparent transition-opacity duration-500 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+              <div className="flex items-center gap-4">
+                <button onClick={onClose} className="w-10 h-10 bg-[rgba(255,255,255,0.15)] backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[rgba(255,255,255,0.25)] transition-colors">
+                  <ChevronLeft size={24} />
+                </button>
+                <div>
+                  <h3 className="text-white font-semibold text-lg md:text-xl tracking-tight drop-shadow-md">{itemTitle || item.name}</h3>
+                  {!isMovie && <span className="text-gray-300 text-sm font-medium">Season {currentSeason} • Episode {currentEpisode}</span>}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                {/* Dynamic Sandbox Security Toggle Switch */}
+                <button 
+                  onClick={() => setStrictMode(!strictMode)} 
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold backdrop-blur-md border transition-all duration-300 ${
+                    strictMode 
+                      ? 'bg-[rgba(52,199,89,0.15)] text-[#34c759] border-[#34c759]/30 hover:bg-[rgba(52,199,89,0.25)]' 
+                      : 'bg-[rgba(255,59,48,0.15)] text-[#ff3b30] border-[#ff3b30]/30 hover:bg-[rgba(255,59,48,0.25)]'
+                  }`}
+                >
+                  {strictMode ? <Shield size={14} /> : <ShieldAlert size={14} />}
+                  <span>Sandbox: {strictMode ? 'Protected' : 'Off (Adblock Req.)'}</span>
+                </button>
+
+                {/* Server Stream Selector */}
+                <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2 text-sm border border-[rgba(255,255,255,0.05)] text-white">
+                  <MonitorPlay size={16} className="text-gray-400" />
+                  <select value={activeServer} onChange={(e) => setActiveServer(e.target.value)} className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none pr-4">
+                    {SERVERS.map(s => <option key={s.id} value={s.id} className="bg-[#1c1c1e] text-white">{s.name}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-              {/* Dynamic Sandbox Security Toggle Switch */}
-              <button 
-                onClick={() => setStrictMode(!strictMode)} 
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold backdrop-blur-md border transition-all duration-300 ${
-                  strictMode 
-                    ? 'bg-[rgba(52,199,89,0.15)] text-[#34c759] border-[#34c759]/30 hover:bg-[rgba(52,199,89,0.25)]' 
-                    : 'bg-[rgba(255,59,48,0.15)] text-[#ff3b30] border-[#ff3b30]/30 hover:bg-[rgba(255,59,48,0.25)]'
-                }`}
-              >
-                {strictMode ? <Shield size={14} /> : <ShieldAlert size={14} />}
-                <span>Sandbox: {strictMode ? 'Protected' : 'Off (Adblock Req.)'}</span>
-              </button>
-
-              {/* Server Stream Selector */}
-              <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2 text-sm border border-[rgba(255,255,255,0.05)] text-white">
-                <MonitorPlay size={16} className="text-gray-400" />
-                <select value={activeServer} onChange={(e) => setActiveServer(e.target.value)} className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none pr-4">
-                  {SERVERS.map(s => <option key={s.id} value={s.id} className="bg-[#1c1c1e] text-white">{s.name}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
+          )}
           
           {/* Main Core Frame Window */}
           <div className="flex-1 relative w-full h-full bg-black">
@@ -657,8 +669,8 @@
             )}
           </div>
 
-          {/* Bottom Bar Media HUD (Exclusive for TV Shows) */}
-          {!isMovie && (
+          {/* Bottom Bar Media HUD (Exclusive for TV Shows) - Unmounted entirely when uiRemoved is true */}
+          {!isMovie && !uiRemoved && (
             <div className={`absolute bottom-0 left-0 w-full p-6 pb-12 md:pb-6 flex flex-col sm:flex-row justify-between items-center gap-4 z-20 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-500 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 {/* Season Dropdown Menu */}
