@@ -230,7 +230,7 @@
       { id: 'flixer', name: 'Flixer', buildUrl: (id, type, s, e) => type === 'movie' ? `https://tv.vynx.cc/watch/${id}?type=movie` : `https://tv.vynx.cc/watch/${id}?type=tv&season=${s}&episode=${e}` }
     ];
 
-    const DEFAULT_SETTINGS = { provider: 'embedsu', theme: 'dark', strictMode: true };
+    const DEFAULT_SETTINGS = { provider: 'embedsu', theme: 'dark', strictMode: true, nextEpButton: true };
 
     const fetchTMDB = async (endpoint, params = {}) => {
       const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
@@ -690,8 +690,8 @@
                 </div>
               </div>
 
-              {/* Dynamic Next Episode Quick Action Trigger */}
-              {hasNextEpisode && (
+              {/* Dynamic Next Episode Quick Action Trigger (Conditionally rendered on setting check) */}
+              {hasNextEpisode && (globalSettings.nextEpButton !== false) && (
                 <button 
                   onClick={handleNextEpisode} 
                   className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 active:scale-95 transition-all text-sm shadow-xl w-full sm:w-auto justify-center"
@@ -716,7 +716,15 @@
       
       const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('beam_settings');
-        return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            return { ...DEFAULT_SETTINGS, ...parsed }; // Merges settings to support the new toggle cleanly
+          } catch(e) {
+            return DEFAULT_SETTINGS;
+          }
+        }
+        return DEFAULT_SETTINGS;
       });
 
       // Apply Theme on load and change
@@ -896,6 +904,7 @@
                     </div>
                   </div>
 
+                  {/* Security Sandbox */}
                   <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
                     <div className="pr-4">
                       <h3 className="text-xl font-semibold text-color-main mb-1">Security Sandbox</h3>
@@ -903,6 +912,17 @@
                     </div>
                     <button onClick={() => updateSetting('strictMode', !settings.strictMode)} className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 ${settings.strictMode ? 'bg-[#34c759]' : 'bg-[rgba(255,255,255,0.2)]'}`}>
                       <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${settings.strictMode ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+
+                  {/* Next Episode HUD Toggle Switch */}
+                  <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
+                    <div className="pr-4">
+                      <h3 className="text-xl font-semibold text-color-main mb-1">Next Episode HUD Button</h3>
+                      <p className="text-sm text-color-muted">Show a quick-action trigger button in the video player HUD to easily jump to the next episode.</p>
+                    </div>
+                    <button onClick={() => updateSetting('nextEpButton', !settings.nextEpButton)} className={`relative w-14 h-8 rounded-full transition-colors flex-shrink-0 ${settings.nextEpButton ? 'bg-[#34c759]' : 'bg-[rgba(255,255,255,0.2)]'}`}>
+                      <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform duration-300 ${settings.nextEpButton ? 'translate-x-6' : 'translate-x-0'}`} />
                     </button>
                   </div>
 
