@@ -15,7 +15,16 @@
   <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Minimalist Apple-like Styles with Light/Dark Mode Variables -->
+  <!-- Import Map to fix react/jsx-runtime error -->
+  <script type="importmap">
+    {
+      "imports": {
+        "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime"
+      }
+    }
+  </script>
+
+  <!-- Minimalist Apple-like Styles -->
   <style>
     :root {
       --system-bg: #000000;
@@ -61,7 +70,6 @@
       transition: background-color 0.5s ease, color 0.5s ease;
     }
 
-    /* Serene Background Mesh */
     .bg-mesh {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -77,7 +85,6 @@
       100% { transform: scale(1.1); opacity: 1; }
     }
 
-    /* Apple Glassmorphism */
     .apple-glass {
       background: var(--glass-bg);
       backdrop-filter: blur(40px);
@@ -86,7 +93,6 @@
       transition: background 0.3s ease, border-color 0.3s ease;
     }
 
-    /* Inputs & Buttons */
     .apple-input {
       background: var(--input-bg);
       border: 1px solid var(--glass-border);
@@ -120,7 +126,6 @@
     }
     .btn-secondary:hover { transform: scale(1.02); opacity: 0.8; }
 
-    /* Card Hover Dynamics */
     .apple-card {
       background: var(--card-bg);
       transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
@@ -138,7 +143,6 @@
     }
     .apple-card:hover .apple-card-overlay { opacity: 1; }
 
-    /* Dynamic Dock Navigation */
     .dynamic-dock-wrapper {
       position: fixed;
       bottom: 1.5rem;
@@ -179,12 +183,12 @@
     import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client?deps=react@18.2.0';
     import * as lucide from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0,react-dom@18.2.0';
     
-    const { Play, Info, Plus, X, Search, Home, Tv, Film, Bookmark, User, ChevronLeft, ChevronRight, LogOut, Settings, Check, MonitorPlay, Moon, Sun, Shield, ShieldAlert, Eye, EyeOff } = lucide;
+    const { Play, Info, Plus, X, Search, Home, Tv, Film, Bookmark, User, ChevronLeft, ChevronRight, LogOut, Settings, Check, MonitorPlay, Moon, Sun, Shield, ShieldAlert, Eye, EyeOff, AlertCircle } = lucide;
 
     // --- FIREBASE INITIALIZATION ---
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { getFirestore, collection, doc, setDoc, onSnapshot, query, deleteDoc, getDocs } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    import { getFirestore, collection, doc, setDoc, onSnapshot, query, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyAPNZttReZ8s6ga5iNChr-cAUGNqbDUsBc",
@@ -205,29 +209,11 @@
     const TMDB_BASE_URL = "https://api.themoviedb.org/3";
     const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/";
 
-    // --- STREAMING AGGREGATORS (All Old + New + Hindi) ---
     const SERVERS = [
       { id: 'embedsu', name: 'EmbedSU (Best for Preview)', buildUrl: (id, type, s, e) => type === 'movie' ? `https://embed.su/embed/movie/${id}` : `https://embed.su/embed/tv/${id}/${s}/${e}` },
       { id: 'vidsrc', name: 'VidSrc (Requires Download)', buildUrl: (id, type, s, e) => type === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${id}` : `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
       { id: 'vidsrc-in', name: 'VidSrc IN (Hindi)', buildUrl: (id, type, s, e) => type === 'movie' ? `https://vidsrc.in/embed/movie?tmdb=${id}` : `https://vidsrc.in/embed/tv?tmdb=${id}&season=${s}&episode=${e}` },
       { id: 'smashy', name: 'SmashyStream', buildUrl: (id, type, s, e) => type === 'movie' ? `https://embed.smashystream.com/playere.php?tmdb=${id}` : `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${s}&episode=${e}` },
-      { id: 'zoechip', name: 'Zoechip', buildUrl: (id, type, s, e, title) => {
-          const slug = (title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          return type === 'movie' ? `https://zoechip.click/movie/${slug}` : `https://zoechip.click/tvshow/${slug}`;
-        }
-      },
-      { id: 'superembed', name: 'SuperEmbed', buildUrl: (id, type, s, e) => type === 'movie' ? `https://multiembed.mov/?video_id=${id}&tmdb=1` : `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` },
-      { id: '123moviehd', name: '123MovieHD (Bollywood)', buildUrl: (id, type, s, e, title) => {
-          const slug = (title || 'watch').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          return type === 'movie' 
-            ? `https://123moviehd.in/movies/${slug}-${id}` 
-            : `https://123moviehd.in/tv-shows/${slug}-${id}/season/${s}/episode/${e}`;
-        }
-      },
-      { id: 'vidking', name: 'Vidking', buildUrl: (id, type, s, e) => type === 'movie' ? `https://www.vidking.net/embed/movie/${id}?autoPlay=true` : `https://www.vidking.net/embed/tv/${id}/${s}/${e}?autoPlay=true` },
-      { id: 'xp', name: 'XP', buildUrl: (id, type, s, e) => type === 'movie' ? `https://xk4l.mzt4pr8wlkxnv0qsha5g.website/watch/${id}` : `https://xk4l.mzt4pr8wlkxnv0qsha5g.website/watch/${id}/${s}/${e}` },
-      { id: '67movies', name: '67movies', buildUrl: (id, type, s, e) => type === 'movie' ? `https://67movies.net/watch/movie/${id}` : `https://67movies.net/watch/tv/${id}/${s}/${e}` },
-      { id: 'flixer', name: 'Flixer', buildUrl: (id, type, s, e) => type === 'movie' ? `https://tv.vynx.cc/watch/${id}?type=movie` : `https://tv.vynx.cc/watch/${id}?type=tv&season=${s}&episode=${e}` }
     ];
 
     const DEFAULT_SETTINGS = { provider: 'embedsu', theme: 'dark', strictMode: true, nextEpButton: true };
@@ -238,13 +224,11 @@
       const response = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${TMDB_TOKEN}`, "Content-Type": "application/json;charset=utf-8" },
       });
-      if (!response.ok) throw new Error('TMDB API Error');
+      if (!response.ok) throw new Error(`TMDB API Error: ${response.status}`);
       return response.json();
     };
 
     // --- COMPONENTS ---
-
-    // 0. Clean Authentication Screen
     const AuthScreen = () => {
       const [isLogin, setIsLogin] = useState(true);
       const [email, setEmail] = useState('');
@@ -298,7 +282,6 @@
       );
     };
 
-    // 1. Dynamic Dock Navigation (Mac/iOS Vibe)
     const DynamicDock = ({ currentView, setView }) => {
       const navItems = [
         { id: 'home', icon: Home, label: 'Home' },
@@ -324,8 +307,6 @@
                 >
                   <item.icon size={22} className={`transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />
                   {isActive && <div className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[#0a84ff]" />}
-                  
-                  {/* Tooltip for desktop */}
                   <span className="absolute -top-10 px-3 py-1 bg-[rgba(0,0,0,0.8)] text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hidden md:block pointer-events-none whitespace-nowrap backdrop-blur-md">
                     {item.label}
                   </span>
@@ -337,7 +318,6 @@
       );
     };
 
-    // 2. Elegant Media Card
     const MediaCard = ({ item, onClick, progress }) => {
       const imageUrl = item.poster_path ? `${IMAGE_BASE_URL}w500${item.poster_path}` : 'https://via.placeholder.com/500x750/1c1c1e/ffffff?text=No+Image';
       const title = item.title || item.name;
@@ -357,7 +337,6 @@
       );
     };
 
-    // 3. Media Row
     const MediaRow = ({ title, items, onCardClick, isContinueWatching = false }) => {
       const rowRef = useRef(null);
 
@@ -396,7 +375,6 @@
       );
     };
 
-    // 4. Immersive Detail Sheet with Aesthetic Episode UI
     const DetailSheet = ({ item, onClose, onPlay, userList, toggleList, progressData }) => {
       const [sheetSeason, setSheetSeason] = useState(1);
       const [tvDetails, setTvDetails] = useState(null);
@@ -406,17 +384,13 @@
 
       const isMovie = item?.media_type === 'movie' || item?.title;
       
-      // Smart Initialization
       useEffect(() => {
         if (progressData && progressData.season) setSheetSeason(progressData.season);
-        
         if (item && !isMovie) {
-          // Fetch overall TV Details (for season count)
           fetchTMDB(`/tv/${item.id}`).then(data => setTvDetails(data)).catch(err => console.error(err));
         }
       }, [item, progressData, isMovie]);
 
-      // Fetch Episodes when Season Changes
       useEffect(() => {
         if (item && !isMovie && sheetSeason) {
           setLoadingEps(true);
@@ -442,8 +416,6 @@
           <div className="absolute inset-0 cursor-pointer" onClick={handleClose} />
           
           <div className={`relative w-full h-[90vh] md:h-[85vh] sheet-bg-color rounded-t-[2rem] overflow-hidden shadow-[0_-10px_40px_rgba(0,0,0,0.2)] flex flex-col transition-transform duration-300 ${closing ? 'translate-y-full' : 'translate-y-0'}`}>
-            
-            {/* Dynamic Header Image */}
             <div className="absolute top-0 left-0 w-full h-[40vh] md:h-[50vh] opacity-30 md:opacity-50 pointer-events-none">
               {backdropUrl && <img src={backdropUrl} alt="" className="w-full h-full object-cover mask-image-gradient" style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }} />}
             </div>
@@ -490,7 +462,6 @@
 
                 <p className="text-color-main text-lg leading-relaxed mb-12 max-w-3xl opacity-90">{item.overview}</p>
 
-                {/* Aesthetic Episode Selection */}
                 {!isMovie && (
                   <div className="mb-12">
                     <div className="flex items-center justify-between mb-6">
@@ -504,7 +475,7 @@
                       <div className="flex gap-4 overflow-hidden py-2"><div className="w-64 h-36 apple-glass rounded-2xl animate-pulse"></div><div className="w-64 h-36 apple-glass rounded-2xl animate-pulse"></div></div>
                     ) : (
                       <div className="flex overflow-x-auto gap-5 pb-8 hide-scrollbar snap-x">
-                        {episodes.map((ep, idx) => {
+                        {episodes.map((ep) => {
                           const epImage = ep.still_path ? `${IMAGE_BASE_URL}w300${ep.still_path}` : 'https://via.placeholder.com/300x170/1c1c1e/ffffff?text=Episode';
                           return (
                             <div key={ep.id} onClick={() => onPlay(item, sheetSeason, ep.episode_number, title)} className="w-64 md:w-72 shrink-0 snap-start apple-card rounded-2xl p-3 cursor-pointer flex flex-col justify-between group">
@@ -536,16 +507,14 @@
       );
     };
 
-    // 5. Clean Video Player (With Integrated TV Selection, Sandbox Toggles, & Next Ep)
     const PlayerModal = ({ item, initSeason, initEpisode, itemTitle, onClose, globalSettings, saveProgress }) => {
       const [loading, setLoading] = useState(true);
       const [activeServer, setActiveServer] = useState(globalSettings.provider);
       const [strictMode, setStrictMode] = useState(globalSettings.strictMode);
-      const [uiRemoved, setUiRemoved] = useState(false); // Persistent toggle state to remove all overlay UIs
+      const [uiRemoved, setUiRemoved] = useState(false);
       
       const isMovie = item.media_type === 'movie' || item.title;
       
-      // Dynamic Playback Navigation States
       const [currentSeason, setCurrentSeason] = useState(initSeason || 1);
       const [currentEpisode, setCurrentEpisode] = useState(initEpisode || 1);
       const [episodes, setEpisodes] = useState([]);
@@ -554,22 +523,18 @@
       const [controlsVisible, setControlsVisible] = useState(true);
       const timeoutRef = useRef(null);
 
-      // Fetch dynamic total seasons count for TV shows
       useEffect(() => {
         if (!isMovie) {
-          fetchTMDB(`/tv/${item.id}`)
-            .then(data => setTotalSeasons(data.number_of_seasons || 1))
-            .catch(err => console.error(err));
+          fetchTMDB(`/tv/${item.id}`).then(data => setTotalSeasons(data.number_of_seasons || 1)).catch(console.error);
         }
       }, [item, isMovie]);
 
-      // Refresh episode track list when the viewer switches seasons
       useEffect(() => {
         if (!isMovie) {
           setLoading(true);
           fetchTMDB(`/tv/${item.id}/season/${currentSeason}`)
             .then(data => { setEpisodes(data.episodes || []); setLoading(false); })
-            .catch(err => { console.error(err); setLoading(false); });
+            .catch(() => setLoading(false));
         }
       }, [item, currentSeason, isMovie]);
 
@@ -578,7 +543,6 @@
 
       useEffect(() => { setLoading(true); }, [videoUrl]);
       
-      // Keep real-time tracking synced during episode shifts
       useEffect(() => {
         const timer = setTimeout(() => saveProgress(item, Math.floor(Math.random() * 80) + 10, currentSeason, currentEpisode), 15000);
         return () => clearTimeout(timer);
@@ -590,33 +554,22 @@
         timeoutRef.current = setTimeout(() => setControlsVisible(false), 3500);
       };
 
-      // Evaluate logic for Next Episode Availability
-      const hasNextEpisode = !isMovie && (
-        currentEpisode < episodes.length || currentSeason < totalSeasons
-      );
+      const hasNextEpisode = !isMovie && (currentEpisode < episodes.length || currentSeason < totalSeasons);
 
       const handleNextEpisode = () => {
-        if (currentEpisode < episodes.length) {
-          setCurrentEpisode(prev => prev + 1);
-        } else if (currentSeason < totalSeasons) {
-          setCurrentSeason(prev => prev + 1);
-          setCurrentEpisode(1); // Reset back to first episode of new season
-        }
+        if (currentEpisode < episodes.length) setCurrentEpisode(prev => prev + 1);
+        else if (currentSeason < totalSeasons) { setCurrentSeason(prev => prev + 1); setCurrentEpisode(1); }
       };
 
       return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col fade-enter" onMouseMove={handleMouseMove} onTouchStart={handleMouseMove}>
-          
-          {/* Ever-present Circular Toggle Button (Always stays visible to let you show/hide UI easily) */}
           <button 
             onClick={() => setUiRemoved(!uiRemoved)} 
             className="absolute left-6 top-32 md:top-24 w-10 h-10 bg-[rgba(255,255,255,0.22)] hover:bg-[rgba(255,255,255,0.38)] active:scale-95 text-white backdrop-blur-md rounded-full flex items-center justify-center transition-all z-[110] border border-[rgba(255,255,255,0.15)] shadow-lg"
-            title={uiRemoved ? "Show UI Overlays" : "Completely Unmount UI Overlays"}
           >
             {uiRemoved ? <Eye size={18} /> : <EyeOff size={18} />}
           </button>
 
-          {/* Top Bar Navigation HUD - Unmounted entirely when uiRemoved is true */}
           {!uiRemoved && (
             <div className={`absolute top-0 left-0 w-full p-6 pt-12 md:pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-20 bg-gradient-to-b from-black/95 via-black/60 to-transparent transition-opacity duration-500 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
               <div className="flex items-center gap-4">
@@ -630,20 +583,16 @@
               </div>
 
               <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-                {/* Dynamic Sandbox Security Toggle Switch */}
                 <button 
                   onClick={() => setStrictMode(!strictMode)} 
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold backdrop-blur-md border transition-all duration-300 ${
-                    strictMode 
-                      ? 'bg-[rgba(52,199,89,0.15)] text-[#34c759] border-[#34c759]/30 hover:bg-[rgba(52,199,89,0.25)]' 
-                      : 'bg-[rgba(255,59,48,0.15)] text-[#ff3b30] border-[#ff3b30]/30 hover:bg-[rgba(255,59,48,0.25)]'
+                    strictMode ? 'bg-[rgba(52,199,89,0.15)] text-[#34c759] border-[#34c759]/30 hover:bg-[rgba(52,199,89,0.25)]' : 'bg-[rgba(255,59,48,0.15)] text-[#ff3b30] border-[#ff3b30]/30 hover:bg-[rgba(255,59,48,0.25)]'
                   }`}
                 >
                   {strictMode ? <Shield size={14} /> : <ShieldAlert size={14} />}
                   <span>Sandbox: {strictMode ? 'Protected' : 'Off (Adblock Req.)'}</span>
                 </button>
 
-                {/* Server Stream Selector */}
                 <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-md rounded-xl px-3 py-2 flex items-center gap-2 text-sm border border-[rgba(255,255,255,0.05)] text-white">
                   <MonitorPlay size={16} className="text-gray-400" />
                   <select value={activeServer} onChange={(e) => setActiveServer(e.target.value)} className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none pr-4">
@@ -654,7 +603,6 @@
             </div>
           )}
           
-          {/* Main Core Frame Window */}
           <div className="flex-1 relative w-full h-full bg-black">
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center z-10 bg-black">
@@ -669,86 +617,58 @@
             )}
           </div>
 
-          {/* Bottom Bar Media HUD (Exclusive for TV Shows) - Unmounted entirely when uiRemoved is true */}
           {!isMovie && !uiRemoved && (
             <div className={`absolute bottom-0 left-0 w-full p-6 pb-12 md:pb-6 flex flex-col sm:flex-row justify-between items-center gap-4 z-20 bg-gradient-to-t from-black/95 via-black/60 to-transparent transition-opacity duration-500 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
               <div className="flex items-center gap-3 w-full sm:w-auto">
-                {/* Season Dropdown Menu */}
                 <div className="bg-[rgba(255,255,255,0.12)] backdrop-blur-md rounded-xl px-3 py-2 text-sm border border-[rgba(255,255,255,0.05)] text-white">
-                  <select 
-                    value={currentSeason} 
-                    onChange={(e) => { setCurrentSeason(Number(e.target.value)); setCurrentEpisode(1); }} 
-                    className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none"
-                  >
-                    {[...Array(totalSeasons)].map((_, i) => (
-                      <option key={i+1} value={i+1} className="bg-[#1c1c1e] text-white">Season {i+1}</option>
-                    ))}
+                  <select value={currentSeason} onChange={(e) => { setCurrentSeason(Number(e.target.value)); setCurrentEpisode(1); }} className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none">
+                    {[...Array(totalSeasons)].map((_, i) => <option key={i+1} value={i+1} className="bg-[#1c1c1e] text-white">Season {i+1}</option>)}
                   </select>
                 </div>
 
-                {/* Episode Selection Dropdown Menu */}
                 <div className="bg-[rgba(255,255,255,0.12)] backdrop-blur-md rounded-xl px-3 py-2 text-sm border border-[rgba(255,255,255,0.05)] text-white max-w-[220px] sm:max-w-xs">
-                  <select 
-                    value={currentEpisode} 
-                    onChange={(e) => setCurrentEpisode(Number(e.target.value))} 
-                    className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none truncate pr-4"
-                  >
-                    {episodes.map((ep) => (
-                      <option key={ep.id} value={ep.episode_number} className="bg-[#1c1c1e] text-white">
-                        Ep {ep.episode_number}: {ep.name}
-                      </option>
-                    ))}
+                  <select value={currentEpisode} onChange={(e) => setCurrentEpisode(Number(e.target.value))} className="bg-transparent text-white font-medium outline-none cursor-pointer appearance-none truncate pr-4">
+                    {episodes.map((ep) => <option key={ep.id} value={ep.episode_number} className="bg-[#1c1c1e] text-white">Ep {ep.episode_number}: {ep.name}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* Dynamic Next Episode Quick Action Trigger (Conditionally rendered on setting check) */}
               {hasNextEpisode && (globalSettings.nextEpButton !== false) && (
-                <button 
-                  onClick={handleNextEpisode} 
-                  className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 active:scale-95 transition-all text-sm shadow-xl w-full sm:w-auto justify-center"
-                >
-                  <span>Next Episode</span>
-                  <ChevronRight size={16} />
+                <button onClick={handleNextEpisode} className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 active:scale-95 transition-all text-sm shadow-xl w-full sm:w-auto justify-center">
+                  <span>Next Episode</span><ChevronRight size={16} />
                 </button>
               )}
             </div>
           )}
-
         </div>
       );
     };
 
-    // --- MAIN APP ENTRY ---
     function App() {
       const [appState, setAppState] = useState('loading'); 
       const [user, setUser] = useState(null);
       const [view, setView] = useState('home');
       const [searchQuery, setSearchQuery] = useState('');
+      const [apiError, setApiError] = useState(false);
       
+      // FIX: Secure LocalStorage retrieval to prevent crash on strict privacy browsers
       const [settings, setSettings] = useState(() => {
-        const saved = localStorage.getItem('beam_settings');
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            return { ...DEFAULT_SETTINGS, ...parsed }; // Merges settings to support the new toggle cleanly
-          } catch(e) {
-            return DEFAULT_SETTINGS;
-          }
+        try {
+          const saved = localStorage.getItem('beam_settings');
+          return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+        } catch(e) {
+          return DEFAULT_SETTINGS;
         }
-        return DEFAULT_SETTINGS;
       });
 
-      // Apply Theme on load and change
       useEffect(() => {
-        localStorage.setItem('beam_settings', JSON.stringify(settings));
-        document.body.setAttribute('data-theme', settings.theme);
+        try {
+            localStorage.setItem('beam_settings', JSON.stringify(settings));
+        } catch(e){} // Catch strict privacy setting errors
         
-        // Update PWA theme color meta tag
+        document.body.setAttribute('data-theme', settings.theme);
         const metaThemeColor = document.getElementById('meta-theme-color');
-        if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', settings.theme === 'light' ? '#f5f5f7' : '#000000');
-        }
+        if (metaThemeColor) metaThemeColor.setAttribute('content', settings.theme === 'light' ? '#f5f5f7' : '#000000');
       }, [settings]);
 
       const updateSetting = (key, val) => setSettings(prev => ({ ...prev, [key]: val }));
@@ -757,27 +677,22 @@
       const [movies, setMovies] = useState([]);
       const [series, setSeries] = useState([]);
       const [searchResults, setSearchResults] = useState([]);
-      
       const [continueWatching, setContinueWatching] = useState([]);
       const [userList, setUserList] = useState([]);
-      
       const [selectedItem, setSelectedItem] = useState(null);
       const [playingItem, setPlayingItem] = useState(null);
       const [playSeason, setPlaySeason] = useState(1);
       const [playEpisode, setPlayEpisode] = useState(1);
       const [playTitle, setPlayTitle] = useState('');
 
+      // FIX: Removed `appState` from dependencies to prevent infinite loop / rapid unmounting
       useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           setUser(currentUser);
-          if (currentUser) {
-            if (appState === 'loading' || appState === 'auth') setAppState('main');
-          } else {
-            setAppState('auth');
-          }
+          setAppState(currentUser ? 'main' : 'auth');
         });
         return () => unsubscribe();
-      }, [appState]);
+      }, []);
 
       useEffect(() => {
         if (!user) return;
@@ -808,7 +723,10 @@
             setTrending(trendData.results.slice(0, 15));
             setMovies(movieData.results.slice(0, 15));
             setSeries(tvData.results.slice(0, 15));
-          } catch (err) { console.error(err); }
+          } catch (err) {
+             console.error(err);
+             setApiError(true); // FIX: Trigger error UI if TMDB Token fails
+          }
         };
         loadContent();
       }, []);
@@ -816,8 +734,10 @@
       useEffect(() => {
         if (searchQuery.trim().length < 2) { setSearchResults([]); return; }
         const delay = setTimeout(async () => {
-          const data = await fetchTMDB('/search/multi', { query: searchQuery });
-          setSearchResults(data.results.filter(i => i.media_type === 'movie' || i.media_type === 'tv'));
+          try {
+             const data = await fetchTMDB('/search/multi', { query: searchQuery });
+             setSearchResults(data.results.filter(i => i.media_type === 'movie' || i.media_type === 'tv'));
+          } catch(e) { console.error(e) }
         }, 500);
         return () => clearTimeout(delay);
       }, [searchQuery]);
@@ -871,7 +791,7 @@
               </div>
             );
           case 'list':
-            const listItems = userList.map(id => [...trending, ...movies, ...series, ...continueWatching.map(c => c.itemData)].find(i => i.id.toString() === id)).filter(Boolean);
+            const listItems = userList.map(id => [...trending, ...movies, ...series, ...continueWatching.map(c => c.itemData)].find(i => i?.id?.toString() === id)).filter(Boolean);
             return (
               <div className="pt-16 px-6 md:px-12 pb-32 fade-enter max-w-[1400px] mx-auto min-h-screen">
                 <h2 className="text-4xl font-bold text-color-main mb-10 tracking-tight">Up Next</h2>
@@ -894,7 +814,6 @@
                 <h2 className="text-4xl font-bold text-color-main mb-10 tracking-tight">Settings</h2>
                 
                 <div className="space-y-6">
-                  {/* Appearance Toggle */}
                   <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
                     <div>
                       <h3 className="text-xl font-semibold text-color-main mb-1">Appearance</h3>
@@ -907,7 +826,7 @@
 
                   <div className="apple-glass rounded-[2rem] p-6 sm:p-8 shadow-sm">
                     <h3 className="text-xl font-semibold text-color-main mb-2">Playback Source</h3>
-                    <p className="text-sm text-color-muted mb-6">Select your preferred streaming aggregator. (VidLink recommended for Hindi content).</p>
+                    <p className="text-sm text-color-muted mb-6">Select your preferred streaming aggregator.</p>
                     <div className="relative">
                       <select value={settings.provider} onChange={(e) => updateSetting('provider', e.target.value)} className="w-full apple-input rounded-xl px-4 py-4 outline-none cursor-pointer font-medium appearance-none">
                         {SERVERS.map(s => <option key={s.id} value={s.id} className="bg-[var(--card-bg)] text-color-main">{s.name}</option>)}
@@ -916,7 +835,6 @@
                     </div>
                   </div>
 
-                  {/* Security Sandbox */}
                   <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
                     <div className="pr-4">
                       <h3 className="text-xl font-semibold text-color-main mb-1">Security Sandbox</h3>
@@ -927,7 +845,6 @@
                     </button>
                   </div>
 
-                  {/* Next Episode HUD Toggle Switch */}
                   <div className="apple-glass rounded-[2rem] p-6 sm:p-8 flex items-center justify-between shadow-sm">
                     <div className="pr-4">
                       <h3 className="text-xl font-semibold text-color-main mb-1">Next Episode HUD Button</h3>
@@ -954,6 +871,20 @@
           case 'movies':
           case 'series':
           default:
+            // FIX: Added API failure state and Loading indicators so screen isn't permanently black
+            if (apiError) {
+              return (
+                <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6">
+                   <AlertCircle size={48} className="text-red-500 mb-4" />
+                   <h2 className="text-2xl font-bold text-color-main mb-2">Failed to load content</h2>
+                   <p className="text-color-muted">Your TMDB API Token may have expired or you are experiencing network issues.</p>
+                </div>
+              );
+            }
+            if (trending.length === 0) {
+              return <div className="flex h-[80vh] items-center justify-center"><div className="w-8 h-8 border-2 border-[rgba(255,255,255,0.2)] border-t-[var(--system-text)] rounded-full animate-spin" /></div>;
+            }
+
             const heroData = view === 'movies' ? movies : view === 'series' ? series : trending;
             const heroItem = heroData[0];
             
@@ -1001,11 +932,8 @@
       return (
         <div className="min-h-screen relative pb-20">
           <div className="bg-mesh" />
-          
           <main className="relative z-10">{renderContent()}</main>
-          
           <DynamicDock currentView={view} setView={setView} />
-
           {selectedItem && <DetailSheet item={selectedItem} onClose={() => setSelectedItem(null)} onPlay={handlePlay} userList={userList} toggleList={toggleList} progressData={getProgressData(selectedItem)} />}
           {playingItem && <PlayerModal item={playingItem} initSeason={playSeason} initEpisode={playEpisode} itemTitle={playTitle} onClose={() => setPlayingItem(null)} globalSettings={settings} saveProgress={saveProgress} />}
         </div>
